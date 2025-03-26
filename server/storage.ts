@@ -1,7 +1,11 @@
 import { User, InsertUser, BlogPost, InsertBlogPost, Partner, InsertPartner, 
-  Message, InsertMessage, Career, InsertCareer, Application, InsertApplication } from "@shared/schema";
+  Message, InsertMessage, Career, InsertCareer, Application, InsertApplication, 
+  users, blogPosts, partners, messages, careers, applications } from "@shared/schema";
 import createMemoryStore from "memorystore";
 import session from "express-session";
+import { db } from "./db";
+import { eq, desc, asc, and } from "drizzle-orm";
+import connectPg from "connect-pg-simple";
 
 // Session store
 const MemoryStore = createMemoryStore(session);
@@ -86,10 +90,12 @@ export class MemStorage implements IStorage {
       checkPeriod: 86400000, // prune expired entries every 24h
     });
     
-    // Create default admin user
+    // Create default admin user with hashed password
+    // Note: In production, this should be done via a seed script or admin UI
+    // The password here is "JMk@475869"
     this.createUser({
-      username: "admin",
-      password: "admin123", // In a real app, this would be hashed
+      username: "manish.jammulapati",
+      password: "b5337e9336eeb0de0739ea91dadd18cfd1b897cec7be8d9e93bd676d60aa32e9d0f90a5f8a3b6f815580dd396a8f4d03fed0618c41d8bbc4e138e02e0b5dce67.c3e9f78174e74c4c9e31efa800183d09",
       isAdmin: true,
     });
     
@@ -337,4 +343,233 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database Storage implementation
+export class DatabaseStorage implements IStorage {
+  sessionStore: any;
+
+  constructor() {
+    // Set up the PostgreSQL session store
+    const PostgresStore = connectPg(session);
+    this.sessionStore = new PostgresStore({
+      conObject: {
+        connectionString: process.env.DATABASE_URL,
+      },
+      createTableIfMissing: true,
+      tableName: 'session'
+    });
+  }
+
+  // Users methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser & { isAdmin?: boolean }): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({
+        username: insertUser.username,
+        password: insertUser.password,
+        isAdmin: insertUser.isAdmin || false,
+      })
+      .returning();
+    return user;
+  }
+
+  // Blog posts methods
+  async getBlogPosts(): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt));
+  }
+
+  async getBlogPost(id: number): Promise<BlogPost | undefined> {
+    const [post] = await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.id, id));
+    return post;
+  }
+
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    const [post] = await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.slug, slug));
+    return post;
+  }
+
+  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+    const [newPost] = await db.insert(blogPosts).values(post).returning();
+    return newPost;
+  }
+
+  async updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const [updatedPost] = await db
+      .update(blogPosts)
+      .set(post)
+      .where(eq(blogPosts.id, id))
+      .returning();
+    return updatedPost;
+  }
+
+  async deleteBlogPost(id: number): Promise<boolean> {
+    await db.delete(blogPosts).where(eq(blogPosts.id, id));
+    return true;
+  }
+
+  // Partners methods
+  async getPartners(): Promise<Partner[]> {
+    return await db.select().from(partners);
+  }
+
+  async getPartner(id: number): Promise<Partner | undefined> {
+    const [partner] = await db
+      .select()
+      .from(partners)
+      .where(eq(partners.id, id));
+    return partner;
+  }
+
+  async createPartner(partner: InsertPartner): Promise<Partner> {
+    const [newPartner] = await db.insert(partners).values(partner).returning();
+    return newPartner;
+  }
+
+  async updatePartner(id: number, partner: Partial<InsertPartner>): Promise<Partner | undefined> {
+    const [updatedPartner] = await db
+      .update(partners)
+      .set(partner)
+      .where(eq(partners.id, id))
+      .returning();
+    return updatedPartner;
+  }
+
+  async deletePartner(id: number): Promise<boolean> {
+    await db.delete(partners).where(eq(partners.id, id));
+    return true;
+  }
+
+  // Messages methods
+  async getMessages(): Promise<Message[]> {
+    return await db.select().from(messages).orderBy(desc(messages.createdAt));
+  }
+
+  async getMessage(id: number): Promise<Message | undefined> {
+    const [message] = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.id, id));
+    return message;
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [newMessage] = await db
+      .insert(messages)
+      .values({
+        ...message,
+        read: false,
+      })
+      .returning();
+    return newMessage;
+  }
+
+  async markMessageAsRead(id: number): Promise<Message | undefined> {
+    const [updatedMessage] = await db
+      .update(messages)
+      .set({ read: true })
+      .where(eq(messages.id, id))
+      .returning();
+    return updatedMessage;
+  }
+
+  async deleteMessage(id: number): Promise<boolean> {
+    await db.delete(messages).where(eq(messages.id, id));
+    return true;
+  }
+
+  // Careers methods
+  async getCareers(): Promise<Career[]> {
+    return await db.select().from(careers).orderBy(desc(careers.createdAt));
+  }
+
+  async getCareer(id: number): Promise<Career | undefined> {
+    const [career] = await db
+      .select()
+      .from(careers)
+      .where(eq(careers.id, id));
+    return career;
+  }
+
+  async createCareer(career: InsertCareer): Promise<Career> {
+    const [newCareer] = await db.insert(careers).values(career).returning();
+    return newCareer;
+  }
+
+  async updateCareer(id: number, career: Partial<InsertCareer>): Promise<Career | undefined> {
+    const [updatedCareer] = await db
+      .update(careers)
+      .set(career)
+      .where(eq(careers.id, id))
+      .returning();
+    return updatedCareer;
+  }
+
+  async deleteCareer(id: number): Promise<boolean> {
+    await db.delete(careers).where(eq(careers.id, id));
+    return true;
+  }
+
+  // Applications methods
+  async getApplications(careerId?: number): Promise<Application[]> {
+    if (careerId) {
+      return await db
+        .select()
+        .from(applications)
+        .where(eq(applications.careerId, careerId))
+        .orderBy(desc(applications.createdAt));
+    }
+    return await db
+      .select()
+      .from(applications)
+      .orderBy(desc(applications.createdAt));
+  }
+
+  async getApplication(id: number): Promise<Application | undefined> {
+    const [application] = await db
+      .select()
+      .from(applications)
+      .where(eq(applications.id, id));
+    return application;
+  }
+
+  async createApplication(application: InsertApplication): Promise<Application> {
+    const [newApplication] = await db
+      .insert(applications)
+      .values({
+        ...application,
+        status: "pending",
+      })
+      .returning();
+    return newApplication;
+  }
+
+  async updateApplicationStatus(id: number, status: string): Promise<Application | undefined> {
+    const [updatedApplication] = await db
+      .update(applications)
+      .set({ status })
+      .where(eq(applications.id, id))
+      .returning();
+    return updatedApplication;
+  }
+}
+
+// Use Database Storage
+export const storage = new DatabaseStorage();
