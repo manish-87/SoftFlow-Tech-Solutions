@@ -1,6 +1,6 @@
 import { User, InsertUser, BlogPost, InsertBlogPost, Partner, InsertPartner, 
-  Message, InsertMessage, Career, InsertCareer, Application, InsertApplication, 
-  users, blogPosts, partners, messages, careers, applications } from "@shared/schema";
+  Message, InsertMessage, Career, InsertCareer, Application, InsertApplication, Service, InsertService,
+  users, blogPosts, partners, messages, careers, applications, services } from "@shared/schema";
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { db } from "./db";
@@ -51,6 +51,15 @@ export interface IStorage {
   createApplication(application: InsertApplication): Promise<Application>;
   updateApplicationStatus(id: number, status: string): Promise<Application | undefined>;
   
+  // Services
+  getServices(activeOnly?: boolean): Promise<Service[]>;
+  getService(id: number): Promise<Service | undefined>;
+  getServiceBySlug(slug: string): Promise<Service | undefined>;
+  createService(service: InsertService): Promise<Service>;
+  updateService(id: number, service: Partial<InsertService>): Promise<Service | undefined>;
+  toggleServiceActive(id: number, active: boolean): Promise<Service | undefined>;
+  deleteService(id: number): Promise<boolean>;
+  
   // Session store
   sessionStore: session.SessionStore;
 }
@@ -62,6 +71,7 @@ export class MemStorage implements IStorage {
   private messagesList: Map<number, Message>;
   private careersList: Map<number, Career>;
   private applicationsList: Map<number, Application>;
+  private servicesList: Map<number, Service>;
   
   currentUserId: number;
   currentBlogId: number;
@@ -69,6 +79,7 @@ export class MemStorage implements IStorage {
   currentMessageId: number;
   currentCareerId: number;
   currentApplicationId: number;
+  currentServiceId: number;
   sessionStore: session.SessionStore;
 
   constructor() {
@@ -568,6 +579,62 @@ export class DatabaseStorage implements IStorage {
       .where(eq(applications.id, id))
       .returning();
     return updatedApplication;
+  }
+
+  // Services methods
+  async getServices(activeOnly?: boolean): Promise<Service[]> {
+    if (activeOnly) {
+      return await db
+        .select()
+        .from(services)
+        .where(eq(services.active, true))
+        .orderBy(asc(services.order));
+    }
+    return await db.select().from(services).orderBy(asc(services.order));
+  }
+
+  async getService(id: number): Promise<Service | undefined> {
+    const [service] = await db
+      .select()
+      .from(services)
+      .where(eq(services.id, id));
+    return service;
+  }
+
+  async getServiceBySlug(slug: string): Promise<Service | undefined> {
+    const [service] = await db
+      .select()
+      .from(services)
+      .where(eq(services.slug, slug));
+    return service;
+  }
+
+  async createService(service: InsertService): Promise<Service> {
+    const [newService] = await db.insert(services).values(service).returning();
+    return newService;
+  }
+
+  async updateService(id: number, service: Partial<InsertService>): Promise<Service | undefined> {
+    const [updatedService] = await db
+      .update(services)
+      .set(service)
+      .where(eq(services.id, id))
+      .returning();
+    return updatedService;
+  }
+
+  async toggleServiceActive(id: number, active: boolean): Promise<Service | undefined> {
+    const [updatedService] = await db
+      .update(services)
+      .set({ active })
+      .where(eq(services.id, id))
+      .returning();
+    return updatedService;
+  }
+
+  async deleteService(id: number): Promise<boolean> {
+    await db.delete(services).where(eq(services.id, id));
+    return true;
   }
 }
 
