@@ -1,0 +1,340 @@
+import { User, InsertUser, BlogPost, InsertBlogPost, Partner, InsertPartner, 
+  Message, InsertMessage, Career, InsertCareer, Application, InsertApplication } from "@shared/schema";
+import createMemoryStore from "memorystore";
+import session from "express-session";
+
+// Session store
+const MemoryStore = createMemoryStore(session);
+
+export interface IStorage {
+  // Users
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser & { isAdmin?: boolean }): Promise<User>;
+  
+  // Blog posts
+  getBlogPosts(): Promise<BlogPost[]>;
+  getBlogPost(id: number): Promise<BlogPost | undefined>;
+  getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
+  deleteBlogPost(id: number): Promise<boolean>;
+  
+  // Partners
+  getPartners(): Promise<Partner[]>;
+  getPartner(id: number): Promise<Partner | undefined>;
+  createPartner(partner: InsertPartner): Promise<Partner>;
+  updatePartner(id: number, partner: Partial<InsertPartner>): Promise<Partner | undefined>;
+  deletePartner(id: number): Promise<boolean>;
+  
+  // Messages
+  getMessages(): Promise<Message[]>;
+  getMessage(id: number): Promise<Message | undefined>;
+  createMessage(message: InsertMessage): Promise<Message>;
+  markMessageAsRead(id: number): Promise<Message | undefined>;
+  deleteMessage(id: number): Promise<boolean>;
+  
+  // Careers
+  getCareers(): Promise<Career[]>;
+  getCareer(id: number): Promise<Career | undefined>;
+  createCareer(career: InsertCareer): Promise<Career>;
+  updateCareer(id: number, career: Partial<InsertCareer>): Promise<Career | undefined>;
+  deleteCareer(id: number): Promise<boolean>;
+  
+  // Applications
+  getApplications(careerId?: number): Promise<Application[]>;
+  getApplication(id: number): Promise<Application | undefined>;
+  createApplication(application: InsertApplication): Promise<Application>;
+  updateApplicationStatus(id: number, status: string): Promise<Application | undefined>;
+  
+  // Session store
+  sessionStore: session.SessionStore;
+}
+
+export class MemStorage implements IStorage {
+  private users: Map<number, User>;
+  private blogs: Map<number, BlogPost>;
+  private partnersList: Map<number, Partner>;
+  private messagesList: Map<number, Message>;
+  private careersList: Map<number, Career>;
+  private applicationsList: Map<number, Application>;
+  
+  currentUserId: number;
+  currentBlogId: number;
+  currentPartnerId: number;
+  currentMessageId: number;
+  currentCareerId: number;
+  currentApplicationId: number;
+  sessionStore: session.SessionStore;
+
+  constructor() {
+    this.users = new Map();
+    this.blogs = new Map();
+    this.partnersList = new Map();
+    this.messagesList = new Map();
+    this.careersList = new Map();
+    this.applicationsList = new Map();
+    
+    this.currentUserId = 1;
+    this.currentBlogId = 1;
+    this.currentPartnerId = 1;
+    this.currentMessageId = 1;
+    this.currentCareerId = 1;
+    this.currentApplicationId = 1;
+    
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000, // prune expired entries every 24h
+    });
+    
+    // Create default admin user
+    this.createUser({
+      username: "admin",
+      password: "admin123", // In a real app, this would be hashed
+      isAdmin: true,
+    });
+    
+    // Create sample blog posts
+    this.createBlogPost({
+      title: "E-commerce Platform Modernization",
+      slug: "ecommerce-platform-modernization",
+      summary: "How we helped a retail client increase sales by 200% through digital transformation.",
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac dui sit amet purus tempor posuere.",
+      category: "Case Study",
+      coverImage: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+      published: true,
+    });
+    
+    this.createBlogPost({
+      title: "Healthcare Application Development",
+      slug: "healthcare-application-development",
+      summary: "Developing a secure patient management system that improved operational efficiency.",
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac dui sit amet purus tempor posuere.",
+      category: "Case Study",
+      coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+      published: true,
+    });
+    
+    this.createBlogPost({
+      title: "Financial Data Analytics",
+      slug: "financial-data-analytics",
+      summary: "How our data visualization solutions helped a fintech company make better decisions.",
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac dui sit amet purus tempor posuere.",
+      category: "Case Study",
+      coverImage: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+      published: true,
+    });
+  }
+
+  // Users methods
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.username === username,
+    );
+  }
+
+  async createUser(insertUser: InsertUser & { isAdmin?: boolean }): Promise<User> {
+    const id = this.currentUserId++;
+    const user: User = { 
+      ...insertUser, 
+      id,
+      isAdmin: insertUser.isAdmin || false
+    };
+    this.users.set(id, user);
+    return user;
+  }
+
+  // Blog posts methods
+  async getBlogPosts(): Promise<BlogPost[]> {
+    return Array.from(this.blogs.values());
+  }
+
+  async getBlogPost(id: number): Promise<BlogPost | undefined> {
+    return this.blogs.get(id);
+  }
+
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    return Array.from(this.blogs.values()).find(
+      (blog) => blog.slug === slug,
+    );
+  }
+
+  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+    const id = this.currentBlogId++;
+    const now = new Date();
+    const blogPost: BlogPost = { 
+      ...post, 
+      id,
+      createdAt: now
+    };
+    this.blogs.set(id, blogPost);
+    return blogPost;
+  }
+
+  async updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const existingPost = this.blogs.get(id);
+    if (!existingPost) return undefined;
+    
+    const updatedPost: BlogPost = { 
+      ...existingPost, 
+      ...post
+    };
+    this.blogs.set(id, updatedPost);
+    return updatedPost;
+  }
+
+  async deleteBlogPost(id: number): Promise<boolean> {
+    return this.blogs.delete(id);
+  }
+
+  // Partners methods
+  async getPartners(): Promise<Partner[]> {
+    return Array.from(this.partnersList.values());
+  }
+
+  async getPartner(id: number): Promise<Partner | undefined> {
+    return this.partnersList.get(id);
+  }
+
+  async createPartner(partner: InsertPartner): Promise<Partner> {
+    const id = this.currentPartnerId++;
+    const newPartner: Partner = { ...partner, id };
+    this.partnersList.set(id, newPartner);
+    return newPartner;
+  }
+
+  async updatePartner(id: number, partner: Partial<InsertPartner>): Promise<Partner | undefined> {
+    const existingPartner = this.partnersList.get(id);
+    if (!existingPartner) return undefined;
+    
+    const updatedPartner: Partner = { 
+      ...existingPartner, 
+      ...partner
+    };
+    this.partnersList.set(id, updatedPartner);
+    return updatedPartner;
+  }
+
+  async deletePartner(id: number): Promise<boolean> {
+    return this.partnersList.delete(id);
+  }
+
+  // Messages methods
+  async getMessages(): Promise<Message[]> {
+    return Array.from(this.messagesList.values());
+  }
+
+  async getMessage(id: number): Promise<Message | undefined> {
+    return this.messagesList.get(id);
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const id = this.currentMessageId++;
+    const now = new Date();
+    const newMessage: Message = { 
+      ...message, 
+      id,
+      read: false,
+      createdAt: now
+    };
+    this.messagesList.set(id, newMessage);
+    return newMessage;
+  }
+
+  async markMessageAsRead(id: number): Promise<Message | undefined> {
+    const existingMessage = this.messagesList.get(id);
+    if (!existingMessage) return undefined;
+    
+    const updatedMessage: Message = { 
+      ...existingMessage, 
+      read: true
+    };
+    this.messagesList.set(id, updatedMessage);
+    return updatedMessage;
+  }
+
+  async deleteMessage(id: number): Promise<boolean> {
+    return this.messagesList.delete(id);
+  }
+
+  // Careers methods
+  async getCareers(): Promise<Career[]> {
+    return Array.from(this.careersList.values());
+  }
+
+  async getCareer(id: number): Promise<Career | undefined> {
+    return this.careersList.get(id);
+  }
+
+  async createCareer(career: InsertCareer): Promise<Career> {
+    const id = this.currentCareerId++;
+    const now = new Date();
+    const newCareer: Career = { 
+      ...career, 
+      id,
+      createdAt: now
+    };
+    this.careersList.set(id, newCareer);
+    return newCareer;
+  }
+
+  async updateCareer(id: number, career: Partial<InsertCareer>): Promise<Career | undefined> {
+    const existingCareer = this.careersList.get(id);
+    if (!existingCareer) return undefined;
+    
+    const updatedCareer: Career = { 
+      ...existingCareer, 
+      ...career
+    };
+    this.careersList.set(id, updatedCareer);
+    return updatedCareer;
+  }
+
+  async deleteCareer(id: number): Promise<boolean> {
+    return this.careersList.delete(id);
+  }
+
+  // Applications methods
+  async getApplications(careerId?: number): Promise<Application[]> {
+    if (careerId) {
+      return Array.from(this.applicationsList.values()).filter(
+        (app) => app.careerId === careerId,
+      );
+    }
+    return Array.from(this.applicationsList.values());
+  }
+
+  async getApplication(id: number): Promise<Application | undefined> {
+    return this.applicationsList.get(id);
+  }
+
+  async createApplication(application: InsertApplication): Promise<Application> {
+    const id = this.currentApplicationId++;
+    const now = new Date();
+    const newApplication: Application = { 
+      ...application, 
+      id,
+      status: "pending",
+      createdAt: now
+    };
+    this.applicationsList.set(id, newApplication);
+    return newApplication;
+  }
+
+  async updateApplicationStatus(id: number, status: string): Promise<Application | undefined> {
+    const existingApplication = this.applicationsList.get(id);
+    if (!existingApplication) return undefined;
+    
+    const updatedApplication: Application = { 
+      ...existingApplication, 
+      status
+    };
+    this.applicationsList.set(id, updatedApplication);
+    return updatedApplication;
+  }
+}
+
+export const storage = new MemStorage();
