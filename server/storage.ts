@@ -142,6 +142,61 @@ export class MemStorage implements IStorage {
       coverImage: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
       published: true,
     });
+    
+    // Create sample services
+    this.createService({
+      title: "Frontend Development",
+      slug: "frontend-development",
+      description: "Building responsive and accessible user interfaces with modern frameworks. We specialize in modern React development with hooks, responsive mobile-first design, performance optimization, and accessibility compliance.",
+      icon: "code",
+      active: true,
+      order: 1
+    });
+    
+    this.createService({
+      title: "Backend Development",
+      slug: "backend-development",
+      description: "Creating robust and scalable server-side applications and APIs. Our services include RESTful API development, database design and optimization, authentication and authorization, and microservices architecture.",
+      icon: "server",
+      active: true,
+      order: 2
+    });
+    
+    this.createService({
+      title: "Mobile Development",
+      slug: "mobile-development",
+      description: "Building native and cross-platform applications for iOS and Android. We offer cross-platform development with React Native, native iOS development with Swift, native Android development with Kotlin, and mobile UX/UI design.",
+      icon: "smartphone",
+      active: true,
+      order: 3
+    });
+    
+    this.createService({
+      title: "Cloud Management",
+      slug: "cloud-management",
+      description: "Hosting, managing, and scaling applications in the cloud. We provide expertise in AWS, Azure, and Google Cloud, infrastructure as code with Terraform, containerization with Docker and Kubernetes, and CI/CD pipeline implementation.",
+      icon: "cloud",
+      active: true,
+      order: 4
+    });
+    
+    this.createService({
+      title: "Data Analytics",
+      slug: "data-analytics",
+      description: "Turning raw data into actionable insights for better decision making. Our services include data warehouse design, ETL pipeline development, business intelligence dashboards, and machine learning model integration.",
+      icon: "bar-chart",
+      active: true,
+      order: 5
+    });
+    
+    this.createService({
+      title: "Tech Consultancy",
+      slug: "tech-consultancy",
+      description: "Expert advice on technology strategy and implementation. We offer technology stack assessment, digital transformation roadmaps, legacy system modernization, and technical project management.",
+      icon: "lightbulb",
+      active: true,
+      order: 6
+    });
   }
 
   // Users methods
@@ -376,9 +431,11 @@ export class MemStorage implements IStorage {
 
   async createService(service: InsertService): Promise<Service> {
     const id = this.currentServiceId++;
+    const now = new Date();
     const newService: Service = { 
       ...service, 
       id,
+      createdAt: now,
       active: service.active ?? true,
       order: service.order ?? 0
     };
