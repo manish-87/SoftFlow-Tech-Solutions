@@ -15,6 +15,7 @@ import BlogManagement from "@/pages/admin/blog-management";
 import Messages from "@/pages/admin/messages";
 import Partners from "@/pages/admin/partners";
 import Careers from "@/pages/admin/careers";
+import Services from "@/pages/admin/services";
 import NotFound from "@/pages/not-found";
 import { AuthProvider } from "./hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
@@ -38,6 +39,7 @@ function Router() {
       <ProtectedRoute path="/admin/messages" component={Messages} adminOnly />
       <ProtectedRoute path="/admin/partners" component={Partners} adminOnly />
       <ProtectedRoute path="/admin/careers" component={Careers} adminOnly />
+      <ProtectedRoute path="/admin/services" component={Services} adminOnly />
 
       {/* Fallback to 404 */}
       <Route component={NotFound} />

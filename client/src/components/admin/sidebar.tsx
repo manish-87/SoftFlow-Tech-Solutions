@@ -6,7 +6,8 @@ import {
   Building,
   Briefcase,
   ArrowLeft,
-  Home
+  Home,
+  Layers
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,11 @@ export default function AdminSidebar() {
       name: "Partners",
       href: "/admin/partners",
       icon: <Building className="h-5 w-5" />,
+    },
+    {
+      name: "Services",
+      href: "/admin/services",
+      icon: <Layers className="h-5 w-5" />,
     },
     {
       name: "Careers",
