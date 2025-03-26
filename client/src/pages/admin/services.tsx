@@ -426,6 +426,9 @@ export default function Services() {
                     <FormControl>
                       <Input placeholder="code" {...field} />
                     </FormControl>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Available icon names: code, server, smartphone, cloud, bar-chart, lightbulb
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -558,6 +561,9 @@ export default function Services() {
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Available icon names: code, server, smartphone, cloud, bar-chart, lightbulb
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
