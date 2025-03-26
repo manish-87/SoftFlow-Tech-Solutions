@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+  <!-- Background -->
+  <rect x="0" y="0" width="600" height="400" fill="#f8fafc" rx="20" ry="20"/>
+  
+  <!-- Abstract Grid Pattern -->
+  <g opacity="0.3">
+    <line x1="0" y1="50" x2="600" y2="50" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="0" y1="100" x2="600" y2="100" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="0" y1="150" x2="600" y2="150" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="0" y1="200" x2="600" y2="200" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="0" y1="250" x2="600" y2="250" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="0" y1="300" x2="600" y2="300" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="0" y1="350" x2="600" y2="350" stroke="#e2e8f0" stroke-width="1"/>
+    
+    <line x1="50" y1="0" x2="50" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="100" y1="0" x2="100" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="150" y1="0" x2="150" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="200" y1="0" x2="200" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="250" y1="0" x2="250" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="300" y1="0" x2="300" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="350" y1="0" x2="350" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="400" y1="0" x2="400" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="450" y1="0" x2="450" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="500" y1="0" x2="500" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="550" y1="0" x2="550" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+  </g>
+  
+  <!-- Main Platform Circle -->
+  <circle cx="300" cy="220" r="120" fill="#f0f7ff" stroke="#4f46e5" stroke-width="2"/>
+  
+  <!-- AI Brain or CPU Representation -->
+  <g transform="translate(300, 220)">
+    <!-- Center Node -->
+    <circle cx="0" cy="0" r="25" fill="#4f46e5"/>
+    
+    <!-- Connection Lines -->
+    <line x1="-20" y1="-20" x2="-60" y2="-60" stroke="#4f46e5" stroke-width="2"/>
+    <line x1="20" y1="-20" x2="60" y2="-60" stroke="#4f46e5" stroke-width="2"/>
+    <line x1="-20" y1="20" x2="-60" y2="60" stroke="#4f46e5" stroke-width="2"/>
+    <line x1="20" y1="20" x2="60" y2="60" stroke="#4f46e5" stroke-width="2"/>
+    
+    <line x1="-25" y1="0" x2="-85" y2="0" stroke="#4f46e5" stroke-width="2"/>
+    <line x1="25" y1="0" x2="85" y2="0" stroke="#4f46e5" stroke-width="2"/>
+    <line x1="0" y1="-25" x2="0" y2="-85" stroke="#4f46e5" stroke-width="2"/>
+    <line x1="0" y1="25" x2="0" y2="85" stroke="#4f46e5" stroke-width="2"/>
+    
+    <!-- Outer Nodes -->
+    <circle cx="-60" cy="-60" r="10" fill="#4f46e5"/>
+    <circle cx="60" cy="-60" r="10" fill="#4f46e5"/>
+    <circle cx="-60" cy="60" r="10" fill="#4f46e5"/>
+    <circle cx="60" cy="60" r="10" fill="#4f46e5"/>
+    
+    <circle cx="-85" cy="0" r="10" fill="#4f46e5"/>
+    <circle cx="85" cy="0" r="10" fill="#4f46e5"/>
+    <circle cx="0" cy="-85" r="10" fill="#4f46e5"/>
+    <circle cx="0" cy="85" r="10" fill="#4f46e5"/>
+    
+    <!-- Animated Pulse Circles -->
+    <circle cx="0" cy="0" r="35" fill="none" stroke="#4f46e5" stroke-width="1" opacity="0.7">
+      <animate attributeName="r" from="35" to="120" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" from="0.7" to="0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Floating UI Elements -->
+  <!-- Charts -->
+  <rect x="80" y="80" width="80" height="60" rx="5" ry="5" fill="white" stroke="#4f46e5" stroke-width="1"/>
+  <polyline points="90,120 100,100 110,110 120,95 130,105 140,90 150,98" fill="none" stroke="#4f46e5" stroke-width="2"/>
+  
+  <!-- Code Block -->
+  <rect x="440" y="120" width="90" height="70" rx="5" ry="5" fill="white" stroke="#4f46e5" stroke-width="1"/>
+  <line x1="450" y1="135" x2="520" y2="135" stroke="#4f46e5" stroke-width="1"/>
+  <line x1="450" y1="150" x2="510" y2="150" stroke="#4f46e5" stroke-width="1"/>
+  <line x1="450" y1="165" x2="515" y2="165" stroke="#4f46e5" stroke-width="1"/>
+  <line x1="450" y1="180" x2="495" y2="180" stroke="#4f46e5" stroke-width="1"/>
+  
+  <!-- Data Window -->
+  <rect x="130" y="280" width="90" height="70" rx="5" ry="5" fill="white" stroke="#4f46e5" stroke-width="1"/>
+  <rect x="140" y="290" width="70" height="10" rx="2" ry="2" fill="#e0e7ff"/>
+  <rect x="140" y="305" width="45" height="10" rx="2" ry="2" fill="#e0e7ff"/>
+  <rect x="140" y="320" width="60" height="10" rx="2" ry="2" fill="#e0e7ff"/>
+  <rect x="140" y="335" width="35" height="10" rx="2" ry="2" fill="#e0e7ff"/>
+  
+  <!-- Chat UI -->
+  <rect x="450" y="270" width="80" height="90" rx="5" ry="5" fill="white" stroke="#4f46e5" stroke-width="1"/>
+  <rect x="460" y="280" width="60" height="10" rx="5" ry="5" fill="#e0e7ff"/>
+  <rect x="460" y="295" width="40" height="10" rx="5" ry="5" fill="#e0e7ff"/>
+  <rect x="470" y="310" width="50" height="10" rx="5" ry="5" fill="#4f46e5" opacity="0.2"/>
+  <rect x="470" y="325" width="40" height="10" rx="5" ry="5" fill="#4f46e5" opacity="0.2"/>
+  <rect x="460" y="340" width="60" height="10" rx="5" ry="5" fill="#e0e7ff"/>
+  
+  <!-- Title -->
+  <text x="300" y="40" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="#4f46e5" font-weight="bold">AI POWERED SOLUTIONS</text>
+</svg>

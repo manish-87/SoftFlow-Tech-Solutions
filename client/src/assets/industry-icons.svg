@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="300" viewBox="0 0 800 300">
+  <!-- Healthcare Icon -->
+  <g id="healthcare" transform="translate(100, 100)">
+    <circle cx="0" cy="0" r="50" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+    <path d="M-15,-15 L15,-15 M0,-30 L0,30 M-15,15 L15,15" stroke="#4f46e5" stroke-width="3" fill="none"/>
+  </g>
+  
+  <!-- Finance Icon -->
+  <g id="finance" transform="translate(250, 100)">
+    <circle cx="0" cy="0" r="50" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+    <text x="0" y="8" font-family="Arial, sans-serif" font-size="40" text-anchor="middle" fill="#4f46e5" font-weight="bold">$</text>
+  </g>
+  
+  <!-- Security Icon -->
+  <g id="security" transform="translate(400, 100)">
+    <circle cx="0" cy="0" r="50" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+    <path d="M0,-25 L-25,0 L0,25 L25,0 Z" fill="none" stroke="#4f46e5" stroke-width="3"/>
+    <circle cx="0" cy="0" r="10" fill="#4f46e5"/>
+  </g>
+  
+  <!-- Education Icon -->
+  <g id="education" transform="translate(550, 100)">
+    <circle cx="0" cy="0" r="50" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+    <path d="M-30,10 L30,10 L0,-15 Z" fill="#4f46e5"/>
+    <rect x="-15" y="10" width="30" height="20" fill="#4f46e5"/>
+  </g>
+  
+  <!-- Recruitment Icon -->
+  <g id="recruitment" transform="translate(100, 225)">
+    <circle cx="0" cy="0" r="50" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+    <circle cx="0" cy="-15" r="15" fill="#4f46e5"/>
+    <path d="M-20,20 C-20,5 20,5 20,20" fill="none" stroke="#4f46e5" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  
+  <!-- IoT Icon -->
+  <g id="iot" transform="translate(250, 225)">
+    <circle cx="0" cy="0" r="50" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+    <circle cx="-15" cy="-15" r="8" fill="#4f46e5"/>
+    <circle cx="15" cy="-15" r="8" fill="#4f46e5"/>
+    <circle cx="-15" cy="15" r="8" fill="#4f46e5"/>
+    <circle cx="15" cy="15" r="8" fill="#4f46e5"/>
+    <path d="M-15,-15 L15,-15 L15,15 L-15,15 L-15,-15 M-15,-15 L15,15 M-15,15 L15,-15" stroke="#4f46e5" stroke-width="2" fill="none"/>
+  </g>
+  
+  <!-- Insurance Icon -->
+  <g id="insurance" transform="translate(400, 225)">
+    <circle cx="0" cy="0" r="50" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+    <path d="M-15,-25 L15,-25 L15,25 L-15,25 Z" stroke="#4f46e5" stroke-width="3" fill="none"/>
+    <path d="M-15,-10 L15,-10 M-15,0 L15,0 M-15,10 L15,10" stroke="#4f46e5" stroke-width="2"/>
+  </g>
+  
+  <!-- Retail Icon -->
+  <g id="retail" transform="translate(550, 225)">
+    <circle cx="0" cy="0" r="50" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+    <path d="M-25,10 L25,10 L20,-15 L-20,-15 Z" fill="#4f46e5"/>
+    <rect x="-5" y="10" width="10" height="15" fill="#4f46e5"/>
+  </g>
+  
+  <!-- Connect lines -->
+  <path d="M100,150 L700,150" stroke="#4f46e5" stroke-width="1" stroke-dasharray="5,5" opacity="0.5"/>
+</svg>
