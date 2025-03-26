@@ -89,6 +89,7 @@ export class MemStorage implements IStorage {
     this.messagesList = new Map();
     this.careersList = new Map();
     this.applicationsList = new Map();
+    this.servicesList = new Map();
     
     this.currentUserId = 1;
     this.currentBlogId = 1;
@@ -96,6 +97,7 @@ export class MemStorage implements IStorage {
     this.currentMessageId = 1;
     this.currentCareerId = 1;
     this.currentApplicationId = 1;
+    this.currentServiceId = 1;
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
@@ -351,6 +353,65 @@ export class MemStorage implements IStorage {
     };
     this.applicationsList.set(id, updatedApplication);
     return updatedApplication;
+  }
+
+  // Services methods
+  async getServices(activeOnly?: boolean): Promise<Service[]> {
+    const allServices = Array.from(this.servicesList.values());
+    if (activeOnly) {
+      return allServices.filter(service => service.active);
+    }
+    return allServices;
+  }
+
+  async getService(id: number): Promise<Service | undefined> {
+    return this.servicesList.get(id);
+  }
+
+  async getServiceBySlug(slug: string): Promise<Service | undefined> {
+    return Array.from(this.servicesList.values()).find(
+      (service) => service.slug === slug
+    );
+  }
+
+  async createService(service: InsertService): Promise<Service> {
+    const id = this.currentServiceId++;
+    const newService: Service = { 
+      ...service, 
+      id,
+      active: service.active ?? true,
+      order: service.order ?? 0
+    };
+    this.servicesList.set(id, newService);
+    return newService;
+  }
+
+  async updateService(id: number, service: Partial<InsertService>): Promise<Service | undefined> {
+    const existingService = this.servicesList.get(id);
+    if (!existingService) return undefined;
+    
+    const updatedService: Service = { 
+      ...existingService, 
+      ...service
+    };
+    this.servicesList.set(id, updatedService);
+    return updatedService;
+  }
+
+  async toggleServiceActive(id: number, active: boolean): Promise<Service | undefined> {
+    const existingService = this.servicesList.get(id);
+    if (!existingService) return undefined;
+    
+    const updatedService: Service = { 
+      ...existingService, 
+      active
+    };
+    this.servicesList.set(id, updatedService);
+    return updatedService;
+  }
+
+  async deleteService(id: number): Promise<boolean> {
+    return this.servicesList.delete(id);
   }
 }
 

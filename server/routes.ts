@@ -8,7 +8,8 @@ import {
   insertPartnerSchema, 
   insertMessageSchema, 
   insertCareerSchema, 
-  insertApplicationSchema 
+  insertApplicationSchema,
+  insertServiceSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -366,6 +367,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating application status:", error);
       res.status(500).json({ message: "Failed to update application status" });
+    }
+  });
+
+  // Services endpoints
+  app.get("/api/services", async (req, res) => {
+    try {
+      // By default, return only active services for public users
+      const activeOnly = !req.user?.isAdmin;
+      const services = await storage.getServices(activeOnly);
+      res.json(services);
+    } catch (error) {
+      console.error("Error getting services:", error);
+      res.status(500).json({ message: "Failed to get services" });
+    }
+  });
+
+  app.get("/api/services/:slug", async (req, res) => {
+    try {
+      const service = await storage.getServiceBySlug(req.params.slug);
+      
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      // Non-admin users can only see active services
+      if (!service.active && !req.user?.isAdmin) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      res.json(service);
+    } catch (error) {
+      console.error("Error getting service:", error);
+      res.status(500).json({ message: "Failed to get service" });
+    }
+  });
+
+  // Admin service management endpoints
+  app.post("/api/admin/services", async (req, res) => {
+    try {
+      const validatedData = insertServiceSchema.parse(req.body);
+      const service = await storage.createService(validatedData);
+      res.status(201).json(service);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid service data", errors: error.errors });
+      }
+      console.error("Error creating service:", error);
+      res.status(500).json({ message: "Failed to create service" });
+    }
+  });
+
+  app.put("/api/admin/services/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertServiceSchema.partial().parse(req.body);
+      const service = await storage.updateService(id, validatedData);
+      
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      res.json(service);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid service data", errors: error.errors });
+      }
+      console.error("Error updating service:", error);
+      res.status(500).json({ message: "Failed to update service" });
+    }
+  });
+
+  app.put("/api/admin/services/:id/toggle", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { active } = req.body;
+      
+      if (typeof active !== 'boolean') {
+        return res.status(400).json({ message: "Invalid active status" });
+      }
+      
+      const service = await storage.toggleServiceActive(id, active);
+      
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      res.json(service);
+    } catch (error) {
+      console.error("Error toggling service active status:", error);
+      res.status(500).json({ message: "Failed to toggle service status" });
+    }
+  });
+
+  app.delete("/api/admin/services/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteService(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting service:", error);
+      res.status(500).json({ message: "Failed to delete service" });
     }
   });
 
