@@ -133,7 +133,7 @@ export const insertServiceSchema = createInsertSchema(services).omit({
 export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
-  title: text("title").notNull(),
+  title: text("title"), // Made optional to migrate to using only name field
   name: text("name").notNull(),
   description: text("description").notNull(),
   status: text("status").default("planning").notNull(), // planning, in-progress, review, completed, on-hold

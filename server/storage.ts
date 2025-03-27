@@ -656,12 +656,17 @@ export class MemStorage implements IStorage {
   async createProject(project: InsertProject): Promise<Project> {
     const id = this.currentProjectId++;
     const now = new Date();
+    // Use name as title if title is not provided
+    const title = project.title || project.name;
+    
     const newProject: Project = {
       ...project,
       id,
       createdAt: now,
       status: project.status || "pending",
-      completionPercentage: project.completionPercentage || 0
+      completionPercentage: project.completionPercentage || 0,
+      // Set title to be the same as name if not provided
+      title
     };
     this.projectsList.set(id, newProject);
     return newProject;
@@ -670,6 +675,11 @@ export class MemStorage implements IStorage {
   async updateProject(id: number, project: Partial<InsertProject>): Promise<Project | undefined> {
     const existingProject = this.projectsList.get(id);
     if (!existingProject) return undefined;
+    
+    // If we're updating the name but not the title, use name for both
+    if (project.name && !project.title) {
+      project.title = project.name;
+    }
     
     const updatedProject: Project = {
       ...existingProject,
@@ -1283,10 +1293,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProject(project: InsertProject): Promise<Project> {
+    // Use name as title if title is not provided
+    const title = project.title || project.name;
+    
     const [newProject] = await db
       .insert(projects)
       .values({
         ...project,
+        title, // Ensure title is always set
         status: project.status || "pending",
         completionPercentage: project.completionPercentage || 0
       })
@@ -1295,6 +1309,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProject(id: number, project: Partial<InsertProject>): Promise<Project | undefined> {
+    // If we're updating name but not title, use name for title as well
+    if (project.name && !project.title) {
+      project.title = project.name;
+    }
+    
     const [updatedProject] = await db
       .update(projects)
       .set(project)
