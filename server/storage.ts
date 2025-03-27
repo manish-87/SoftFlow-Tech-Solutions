@@ -7,7 +7,7 @@ import { User, InsertUser, BlogPost, InsertBlogPost, Partner, InsertPartner,
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { db } from "./db";
-import { eq, desc, asc, and } from "drizzle-orm";
+import { eq, desc, asc, and, or, sql } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 
 // Fix for SessionStore type
@@ -1396,10 +1396,11 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
     
+    // Use SQL template literal for the IN condition
     return await db
       .select()
       .from(invoices)
-      .where(invoices.projectId.in(projectIds))
+      .where(sql`${invoices.projectId} IN (${sql.join(projectIds)})`)
       .orderBy(desc(invoices.issueDate));
   }
 

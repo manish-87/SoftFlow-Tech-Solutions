@@ -9,6 +9,15 @@ type InvoiceStatusBadgeProps = {
 
 export function InvoiceStatusBadge({ status, className }: InvoiceStatusBadgeProps) {
   const getStatusConfig = () => {
+    // Handle undefined/null status
+    if (!status) {
+      return {
+        variant: 'outline' as const,
+        label: 'Unknown',
+        icon: 'help-circle'
+      };
+    }
+    
     switch (status.toLowerCase()) {
       case 'paid':
         return {
@@ -58,7 +67,7 @@ export function InvoiceStatusBadge({ status, className }: InvoiceStatusBadgeProp
         "font-medium",
         config.variant === 'success' && "bg-green-100 text-green-800 hover:bg-green-200",
         config.variant === 'destructive' && "bg-red-100 text-red-800 hover:bg-red-200", 
-        (config.variant === 'secondary' && status.toLowerCase() === 'pending') && "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+        (config.variant === 'secondary' && status && status.toLowerCase() === 'pending') && "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
         config.variant === 'outline' && "bg-gray-100 text-gray-800 hover:bg-gray-200",
         className
       )}
