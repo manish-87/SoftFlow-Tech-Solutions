@@ -74,22 +74,47 @@ const fallbackIcons = [
 
 // SVG Icon Component
 const ServiceIcon = ({ iconName }: { iconName: string }) => {
-  // More intelligent fallback selection based on the service name
-  let iconId = iconNameMapping[iconName];
-  
-  // If no direct mapping exists, use a more intelligent fallback selection
-  if (!iconId) {
-    // Get a fallback icon based on the hash of the iconName string
-    // This ensures the same service consistently gets the same fallback icon
-    const hash = iconName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const fallbackIndex = hash % fallbackIcons.length;
-    iconId = fallbackIcons[fallbackIndex];
-  }
+  // We'll use emojis as a more reliable fallback
+  const iconMap: Record<string, string> = {
+    'code': '💻',
+    'server': '🖥️',
+    'api': '🔌',
+    'database': '🗄️',
+    'git': '📊',
+    'smartphone': '📱',
+    'android': '🤖',
+    'apple': '🍎',
+    'flutter': '📱',
+    'cloud': '☁️',
+    'aws': '🌩️',
+    'azure': '☁️',
+    'google-cloud': '☁️',
+    'kubernetes': '🚢',
+    'docker': '🐳',
+    'bar-chart': '📊',
+    'data': '📈',
+    'ai': '🤖',
+    'ml': '🧠',
+    'analytics': '📉',
+    'lightbulb': '💡',
+    'briefcase': '💼',
+    'handshake': '🤝',
+    'presentation': '📝',
+    'security': '🔒',
+    'shield': '🛡️',
+    'lock': '🔐',
+    'testing': '🧪',
+    'quality': '✅',
+    'bug': '🐛',
+    'design': '🎨',
+    'palette': '🖌️',
+    'layout': '📐'
+  };
   
   return (
-    <svg className="w-10 h-10" aria-hidden="true">
-      <use href={`${serviceIconsSrc}#${iconId}`} />
-    </svg>
+    <div className="text-3xl">
+      {iconMap[iconName] || '⚙️'}
+    </div>
   );
 };
 
