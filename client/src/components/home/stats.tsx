@@ -95,7 +95,7 @@ export default function Stats() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
         >
-          <div className="inline-block bg-blue-100 text-primary px-4 py-1 rounded-full text-sm font-semibold mb-2">
+          <div className="inline-block bg-sky-100 text-primary px-4 py-1 rounded-full text-sm font-semibold mb-2">
             OUR SUCCESS IN NUMBERS
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -117,7 +117,7 @@ export default function Stats() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
               <div className="flex items-start">
-                <div className="bg-blue-50 p-3 rounded-lg mr-4 text-primary">
+                <div className="bg-sky-50 p-3 rounded-lg mr-4 text-primary">
                   {stat.icon}
                 </div>
                 <div>

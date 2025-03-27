@@ -309,7 +309,7 @@ export default function DashboardPage() {
                             <FormItem className="md:col-span-2">
                               <FormLabel>Profile Photo URL</FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="https://example.com/photo.jpg" />
+                                <Input {...field} value={field.value || ""} placeholder="https://example.com/photo.jpg" />
                               </FormControl>
                               <FormDescription>
                                 Enter a URL to your profile photo
@@ -330,7 +330,7 @@ export default function DashboardPage() {
                               <FormItem>
                                 <FormLabel>GitHub Profile</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="https://github.com/username" />
+                                  <Input {...field} value={field.value || ""} placeholder="https://github.com/username" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -344,7 +344,7 @@ export default function DashboardPage() {
                               <FormItem>
                                 <FormLabel>LinkedIn Profile</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="https://linkedin.com/in/username" />
+                                  <Input {...field} value={field.value || ""} placeholder="https://linkedin.com/in/username" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -358,7 +358,7 @@ export default function DashboardPage() {
                               <FormItem className="md:col-span-2">
                                 <FormLabel>Portfolio Website</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="https://yourportfolio.com" />
+                                  <Input {...field} value={field.value || ""} placeholder="https://yourportfolio.com" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -374,7 +374,7 @@ export default function DashboardPage() {
                           <FormItem>
                             <FormLabel>Bio</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="Tell us about yourself" />
+                              <Input {...field} value={field.value || ""} placeholder="Tell us about yourself" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -571,8 +571,8 @@ export default function DashboardPage() {
                 <EmptyState message="You don't have any active projects at the moment." />
               )}
               
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-                <p className="text-blue-800 text-sm">
+              <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4 mt-6">
+                <p className="text-neutral-800 text-sm">
                   <strong>Note:</strong> The projects section will be updated when you have active projects with SoftFlow.
                   Your project manager will keep this information up-to-date as your project progresses.
                 </p>

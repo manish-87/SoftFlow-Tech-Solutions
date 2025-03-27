@@ -104,19 +104,19 @@ export default function Contact() {
               <h4 className="text-lg font-bold mb-4">Why Choose SoftFlow?</h4>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
-                  <div className="text-blue-500 mt-1">✓</div>
+                  <div className="text-sky-500 mt-1">✓</div>
                   <span>Faster Turnaround</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="text-blue-500 mt-1">✓</div>
+                  <div className="text-sky-500 mt-1">✓</div>
                   <span>Robust Engineering</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="text-blue-500 mt-1">✓</div>
+                  <div className="text-sky-500 mt-1">✓</div>
                   <span>One Stop Solution</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="text-blue-500 mt-1">✓</div>
+                  <div className="text-sky-500 mt-1">✓</div>
                   <span>Trusted Advisory</span>
                 </li>
               </ul>
@@ -134,10 +134,10 @@ export default function Contact() {
             
             {isSubmitted ? (
               <div className="text-center py-8">
-                <div className="text-blue-500 text-5xl mb-4">✓</div>
+                <div className="text-sky-500 text-5xl mb-4">✓</div>
                 <h4 className="text-xl font-bold mb-2">Message Sent Successfully!</h4>
                 <p className="text-neutral-600 mb-6">Thank you for reaching out. We'll get back to you soon.</p>
-                <Button onClick={() => setIsSubmitted(false)} className="bg-blue-600 hover:bg-blue-700">Send Another Message</Button>
+                <Button onClick={() => setIsSubmitted(false)} className="bg-sky-500 hover:bg-sky-600">Send Another Message</Button>
               </div>
             ) : (
               <Form {...form}>
@@ -231,7 +231,7 @@ export default function Contact() {
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-sky-500 hover:bg-sky-600"
                     disabled={messageMutation.isPending}
                   >
                     {messageMutation.isPending ? "Sending..." : "Send Message"}

@@ -420,7 +420,7 @@ export default function Dashboard() {
                             <div className="font-medium text-sm flex items-center gap-1">
                               {message.name}
                               {!message.read && (
-                                <span className="bg-blue-500 h-2 w-2 rounded-full"></span>
+                                <span className="bg-sky-500 h-2 w-2 rounded-full"></span>
                               )}
                             </div>
                             <div className="text-xs text-muted-foreground">
@@ -482,7 +482,7 @@ export default function Dashboard() {
                                     ? "bg-red-100 text-red-800"
                                     : app.status === "hired"
                                     ? "bg-green-100 text-green-800"
-                                    : "bg-blue-100 text-blue-800"
+                                    : "bg-sky-100 text-sky-800"
                                 }`}
                               >
                                 {app.status}
@@ -497,7 +497,7 @@ export default function Dashboard() {
                             ) : app.status === "hired" ? (
                               <CheckCircle2 className="h-4 w-4 text-green-500" />
                             ) : (
-                              <Eye className="h-4 w-4 text-blue-500" />
+                              <Eye className="h-4 w-4 text-sky-500" />
                             )}
                           </div>
                         </div>
@@ -542,7 +542,7 @@ export default function Dashboard() {
                                   project.status === "planning"
                                     ? "bg-purple-100 text-purple-800"
                                     : project.status === "in-progress"
-                                    ? "bg-blue-100 text-blue-800"
+                                    ? "bg-sky-100 text-sky-800"
                                     : project.status === "review"
                                     ? "bg-amber-100 text-amber-800"
                                     : project.status === "completed"
@@ -558,7 +558,7 @@ export default function Dashboard() {
                             {project.status === "planning" ? (
                               <Clock className="h-4 w-4 text-purple-500" />
                             ) : project.status === "in-progress" ? (
-                              <Clock className="h-4 w-4 text-blue-500" />
+                              <Clock className="h-4 w-4 text-sky-500" />
                             ) : project.status === "review" ? (
                               <Eye className="h-4 w-4 text-amber-500" />
                             ) : project.status === "completed" ? (
