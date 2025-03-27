@@ -711,6 +711,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get messages" });
     }
   });
+  
+  // User profile update endpoint
+  app.put("/api/user/profile", async (req, res) => {
+    try {
+      // Ensure user is authenticated
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Only allow updating these specific profile fields
+      const allowedFields = ['email', 'phone', 'photo', 'bio', 'githubUrl', 'linkedinUrl', 'portfolioUrl'];
+      const updateData = Object.fromEntries(
+        Object.entries(req.body).filter(([key]) => allowedFields.includes(key))
+      );
+      
+      const updatedUser = await storage.updateUser(req.user.id, updateData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error updating user profile:", errorMessage);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

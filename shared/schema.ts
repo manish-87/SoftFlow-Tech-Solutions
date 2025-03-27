@@ -9,7 +9,13 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   phone: text("phone").notNull(),
   password: text("password").notNull(),
+  photo: text("photo"),
+  bio: text("bio"),
+  githubUrl: text("github_url"),
+  linkedinUrl: text("linkedin_url"),
+  portfolioUrl: text("portfolio_url"), 
   isAdmin: boolean("is_admin").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -92,8 +98,12 @@ export const applications = pgTable("applications", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
-  resume: text("resume").notNull(),
+  photo: text("photo"), // Passport sized photo URL
+  resume: text("resume").notNull(), // PDF resume URL
   coverLetter: text("cover_letter"),
+  githubUrl: text("github_url"),
+  linkedinUrl: text("linkedin_url"),
+  portfolioUrl: text("portfolio_url"),
   status: text("status").default("pending").notNull(), // pending, reviewed, interviewing, rejected, hired
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

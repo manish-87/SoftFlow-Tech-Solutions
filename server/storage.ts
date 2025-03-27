@@ -23,6 +23,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser & { isAdmin?: boolean }): Promise<User>;
+  updateUser(id: number, userData: Partial<Omit<User, 'id' | 'password' | 'isAdmin'>>): Promise<User | undefined>;
   
   // Blog posts
   getBlogPosts(): Promise<BlogPost[]>;
@@ -250,10 +251,29 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id,
-      isAdmin: insertUser.isAdmin || false
+      isAdmin: insertUser.isAdmin || false,
+      photo: null,
+      bio: null,
+      githubUrl: null,
+      linkedinUrl: null,
+      portfolioUrl: null,
+      createdAt: new Date()
     };
     this.users.set(id, user);
     return user;
+  }
+  
+  async updateUser(id: number, userData: Partial<Omit<User, 'id' | 'password' | 'isAdmin'>>): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+    
+    const updatedUser: User = {
+      ...existingUser,
+      ...userData,
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
 
   // Blog posts methods
@@ -623,6 +643,15 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+  
+  async updateUser(id: number, userData: Partial<Omit<User, 'id' | 'password' | 'isAdmin'>>): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
   }
 
   // Blog posts methods

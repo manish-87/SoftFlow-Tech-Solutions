@@ -1,11 +1,21 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, CheckCircle, Clock, XCircle, BarChart, Activity, Users, MessageSquare } from "lucide-react";
+import { Loader2, FileText, CheckCircle, Clock, XCircle, BarChart, Activity, Users, MessageSquare, User, Settings } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import Layout from "@/components/layout/layout";
-import { Application, Message, Project } from "@shared/schema";
+import { Application, Message, Project, User as UserType } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect } from "wouter";
 
@@ -17,9 +27,23 @@ const EmptyState = ({ message }: { message: string }) => (
   </div>
 );
 
+// Profile form schema 
+const profileSchema = z.object({
+  email: z.string().email("Please enter a valid email"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  photo: z.string().optional().nullable(),
+  githubUrl: z.string().url("Please enter a valid URL").optional().nullable(),
+  linkedinUrl: z.string().url("Please enter a valid URL").optional().nullable(),
+  portfolioUrl: z.string().url("Please enter a valid URL").optional().nullable(),
+  bio: z.string().optional().nullable(),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
+
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState("applications");
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("profile");
 
   // Fetch user's applications
   const {
@@ -137,6 +161,57 @@ export default function DashboardPage() {
     }
   };
 
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: ProfileFormValues) => {
+      const res = await apiRequest("PUT", "/api/user/profile", data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
+        variant: "default",
+      });
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to update profile",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Profile form
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      email: user?.email || "",
+      phone: user?.phone || "",
+      photo: user?.photo || "",
+      githubUrl: user?.githubUrl || "",
+      linkedinUrl: user?.linkedinUrl || "",
+      portfolioUrl: user?.portfolioUrl || "",
+      bio: user?.bio || "",
+    },
+  });
+
+  const onSubmitProfile = (data: ProfileFormValues) => {
+    updateProfileMutation.mutate(data);
+  };
+
+  // Get initials for avatar
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-10 px-4">
@@ -144,10 +219,158 @@ export default function DashboardPage() {
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-8">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="messages">My Messages</TabsTrigger>
             <TabsTrigger value="applications">Job Applications</TabsTrigger>
             <TabsTrigger value="projects">My Projects</TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="profile">
+            <div className="grid grid-cols-1 gap-6">
+              <h2 className="text-2xl font-semibold mb-4">My Profile</h2>
+              
+              <Card>
+                <CardHeader>
+                  <div className="flex flex-col items-center md:flex-row md:items-start gap-6">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={user?.photo || ""} alt={user?.username || ""} />
+                      <AvatarFallback className="text-xl">{getInitials(user?.username || "")}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <CardTitle className="text-2xl">{user?.username}</CardTitle>
+                      <CardDescription className="mt-2">{user?.email}</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmitProfile)} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input {...field} type="email" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Phone Number</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="photo"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>Profile Photo URL</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="https://example.com/photo.jpg" />
+                              </FormControl>
+                              <FormDescription>
+                                Enter a URL to your profile photo
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Professional Links</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <FormField
+                            control={form.control}
+                            name="githubUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>GitHub Profile</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="https://github.com/username" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="linkedinUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>LinkedIn Profile</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="https://linkedin.com/in/username" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="portfolioUrl"
+                            render={({ field }) => (
+                              <FormItem className="md:col-span-2">
+                                <FormLabel>Portfolio Website</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="https://yourportfolio.com" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="bio"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Bio</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="Tell us about yourself" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="flex justify-end">
+                        <Button 
+                          type="submit" 
+                          disabled={updateProfileMutation.isPending}
+                          className="min-w-[120px]"
+                        >
+                          {updateProfileMutation.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          ) : null}
+                          Save Changes
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
           
           <TabsContent value="messages">
             <div className="grid grid-cols-1 gap-6">
