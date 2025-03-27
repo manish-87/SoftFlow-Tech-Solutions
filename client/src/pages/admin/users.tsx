@@ -1,12 +1,26 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, UserCheck, UserX, Mail, Phone, Clock, Users, Shield, Search } from "lucide-react";
+import { 
+  Loader2, 
+  UserCheck, 
+  UserX, 
+  Mail, 
+  Phone, 
+  Clock, 
+  Users, 
+  Shield, 
+  Search, 
+  FileText, 
+  FolderPlus, 
+  PlusCircle
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { User } from "@shared/schema";
+import { User, InsertProject } from "@shared/schema";
 import AdminLayout from "@/components/admin/admin-layout";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
@@ -28,11 +42,44 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Project form schema
+const projectFormSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  startDate: z.string().min(1, "Start date is required"),
+  deadline: z.string().optional(),
+  budget: z.string().optional(),
+  status: z.string().default("planning"),
+});
+
+type ProjectFormValues = z.infer<typeof projectFormSchema>;
 
 export default function UsersManagement() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [confirmingVerifyUser, setConfirmingVerifyUser] = useState<User | null>(null);
+  const [addProjectUser, setAddProjectUser] = useState<User | null>(null);
   
   // Fetch all users
   const {
@@ -67,6 +114,50 @@ export default function UsersManagement() {
     }
   });
   
+  // Create project form setup
+  const form = useForm<ProjectFormValues>({
+    resolver: zodResolver(projectFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      startDate: new Date().toISOString().substring(0, 10),
+      deadline: "",
+      budget: "",
+      status: "planning",
+    }
+  });
+  
+  // Create project mutation
+  const createProjectMutation = useMutation({
+    mutationFn: async ({ userId, project }: { userId: number, project: ProjectFormValues }) => {
+      const formattedProject = {
+        ...project,
+        userId,
+        startDate: new Date(project.startDate).toISOString(),
+        deadline: project.deadline ? new Date(project.deadline).toISOString() : null,
+        budget: project.budget || null,
+      };
+      
+      const res = await apiRequest("POST", `/api/admin/users/${userId}/projects`, formattedProject);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Project created",
+        description: `Project has been created successfully for ${addProjectUser?.username}.`,
+      });
+      form.reset();
+      setAddProjectUser(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to create project",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+  
   // Filter users based on search term
   const filteredUsers = users?.filter(user => {
     if (!searchTerm) return true;
@@ -95,6 +186,24 @@ export default function UsersManagement() {
   const confirmVerify = () => {
     if (confirmingVerifyUser) {
       verifyUserMutation.mutate(confirmingVerifyUser.id);
+    }
+  };
+  
+  const handleAddProjectClick = (user: User) => {
+    setAddProjectUser(user);
+    form.reset({
+      title: "",
+      description: "",
+      startDate: new Date().toISOString().substring(0, 10),
+      deadline: "",
+      budget: "",
+      status: "planning",
+    });
+  };
+  
+  const onProjectSubmit = (data: ProjectFormValues) => {
+    if (addProjectUser) {
+      createProjectMutation.mutate({ userId: addProjectUser.id, project: data });
     }
   };
   
@@ -208,25 +317,40 @@ export default function UsersManagement() {
                             )}
                           </TableCell>
                           <TableCell>
-                            {!user.isVerified ? (
-                              <Button 
-                                size="sm" 
-                                variant="default"
-                                onClick={() => handleVerifyClick(user)}
-                                disabled={verifyUserMutation.isPending && confirmingVerifyUser?.id === user.id}
-                              >
-                                {verifyUserMutation.isPending && confirmingVerifyUser?.id === user.id ? (
-                                  <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                                ) : (
-                                  <UserCheck className="h-3 w-3 mr-2" />
-                                )}
-                                Verify
-                              </Button>
-                            ) : (
-                              <Button size="sm" variant="outline" disabled>
-                                <UserCheck className="h-3 w-3 mr-2" /> Verified
-                              </Button>
-                            )}
+                            <div className="flex gap-2">
+                              {!user.isVerified && !user.isAdmin ? (
+                                <Button 
+                                  size="sm" 
+                                  variant="default"
+                                  onClick={() => handleVerifyClick(user)}
+                                  disabled={verifyUserMutation.isPending && confirmingVerifyUser?.id === user.id}
+                                >
+                                  {verifyUserMutation.isPending && confirmingVerifyUser?.id === user.id ? (
+                                    <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                                  ) : (
+                                    <UserCheck className="h-3 w-3 mr-2" />
+                                  )}
+                                  Verify
+                                </Button>
+                              ) : (
+                                user.isAdmin ? null : (
+                                  <Button size="sm" variant="outline" disabled>
+                                    <UserCheck className="h-3 w-3 mr-2" /> Verified
+                                  </Button>
+                                )
+                              )}
+                              
+                              {!user.isAdmin && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleAddProjectClick(user)}
+                                >
+                                  <FolderPlus className="h-3 w-3 mr-2" />
+                                  Add Project
+                                </Button>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -278,6 +402,145 @@ export default function UsersManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Add Project Dialog */}
+      <Dialog open={!!addProjectUser} onOpenChange={(open) => !open && setAddProjectUser(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+            <DialogDescription>
+              Add a new project for {addProjectUser?.username}. This will be visible in their dashboard.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onProjectSubmit)} className="space-y-4 mt-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Project Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter project title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Enter project description" 
+                        className="min-h-[120px]" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="deadline"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Deadline (Optional)</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="budget"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Budget (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. $5,000" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <FormControl>
+                        <select
+                          className="w-full h-10 px-3 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          {...field}
+                        >
+                          <option value="planning">Planning</option>
+                          <option value="in-progress">In Progress</option>
+                          <option value="review">Under Review</option>
+                          <option value="completed">Completed</option>
+                          <option value="on-hold">On Hold</option>
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <DialogFooter className="mt-6">
+                <Button type="button" variant="outline" onClick={() => setAddProjectUser(null)}>
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={createProjectMutation.isPending}
+                >
+                  {createProjectMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating Project...
+                    </>
+                  ) : (
+                    <>
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      Create Project
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

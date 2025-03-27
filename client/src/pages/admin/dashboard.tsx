@@ -1,6 +1,6 @@
 import AdminLayout from "@/components/admin/admin-layout";
 import { useQuery } from "@tanstack/react-query";
-import { BlogPost, Message, Career, Application, User } from "@shared/schema";
+import { BlogPost, Message, Career, Application, User, Project } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import {
   XCircle,
   UserCheck,
   Shield,
+  Folder,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -53,6 +54,10 @@ export default function Dashboard() {
   const { data: users } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
   });
+  
+  const { data: projects } = useQuery<Project[]>({
+    queryKey: ["/api/admin/projects"],
+  });
 
   // Calculate statistics
   const unreadMessages = messages?.filter((msg) => !msg.read).length || 0;
@@ -69,7 +74,13 @@ export default function Dashboard() {
   ).length || 0;
   
   const totalUsers = users?.length || 0;
-  const verifiedUsers = users?.filter((user) => user.verified).length || 0;
+  const verifiedUsers = users?.filter((user) => user.isVerified).length || 0;
+  
+  const totalProjects = projects?.length || 0;
+  const activeProjects = projects?.filter(project => 
+    project.status === "in-progress" || project.status === "planning" || project.status === "review"
+  ).length || 0;
+  const completedProjects = projects?.filter(project => project.status === "completed").length || 0;
 
   // Chart data
   const blogCategoryData = blogs
@@ -87,6 +98,16 @@ export default function Dashboard() {
         applications.reduce((map, app) => {
           const count = map.get(app.status) || 0;
           map.set(app.status, count + 1);
+          return map;
+        }, new Map<string, number>())
+      ).map(([name, value]) => ({ name, value }))
+    : [];
+    
+  const projectStatusData = projects
+    ? Array.from(
+        projects.reduce((map, project) => {
+          const count = map.get(project.status) || 0;
+          map.set(project.status, count + 1);
           return map;
         }, new Map<string, number>())
       ).map(([name, value]) => ({ name, value }))
@@ -116,7 +137,27 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Users</CardTitle>
+              <UserCheck className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalUsers}</div>
+              <p className="text-xs text-muted-foreground">
+                {verifiedUsers} verified users
+              </p>
+              <div className="mt-2">
+                <Link href="/admin/users">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Manage Users
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Messages</CardTitle>

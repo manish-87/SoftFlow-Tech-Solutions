@@ -788,6 +788,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint for creating projects for a specific user
+  app.post("/api/admin/users/:id/projects", async (req, res) => {
+    try {
+      // Ensure user is authenticated and is an admin
+      if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const userId = parseInt(req.params.id);
+      
+      // Get the user to make sure they exist
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Add userId to project data
+      const projectData = { 
+        ...req.body,
+        userId 
+      };
+      
+      // Validate and create project
+      const validatedData = insertProjectSchema.parse(projectData);
+      const project = await storage.createProject(validatedData);
+      
+      res.status(201).json(project);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid project data", errors: error.errors });
+      }
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error creating project for user:", errorMessage);
+      res.status(500).json({ message: "Failed to create project" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
