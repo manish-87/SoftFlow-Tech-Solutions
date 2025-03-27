@@ -1209,18 +1209,45 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getAllProjects(): Promise<Project[]> {
-    return await db
-      .select()
-      .from(projects)
-      .orderBy(desc(projects.createdAt));
+    try {
+      const allProjects = await db
+        .select()
+        .from(projects)
+        .orderBy(desc(projects.createdAt));
+      
+      // Filter out any potentially invalid project records
+      return allProjects.filter(project => {
+        return (
+          project && 
+          typeof project === 'object' &&
+          project.id !== undefined && 
+          !isNaN(Number(project.id)) &&
+          (project.title || project.name) // Ensure project has at least a title or name
+        );
+      });
+    } catch (error) {
+      console.error("Error getting all projects:", error);
+      return []; // Return empty array instead of throwing error
+    }
   }
 
   async getProject(id: number): Promise<Project | undefined> {
-    const [project] = await db
-      .select()
-      .from(projects)
-      .where(eq(projects.id, id));
-    return project;
+    // Check for invalid id (NaN)
+    if (isNaN(id) || id <= 0) {
+      console.error("Error getting project: Invalid project ID", id);
+      return undefined;
+    }
+    
+    try {
+      const [project] = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.id, id));
+      return project;
+    } catch (error) {
+      console.error("Error getting project:", error);
+      return undefined;
+    }
   }
 
   async createProject(project: InsertProject): Promise<Project> {
