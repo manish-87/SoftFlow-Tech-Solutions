@@ -23,7 +23,6 @@ import { Link } from "wouter";
 
 // Project form schema
 const projectSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
   userId: z.string().min(1, "User selection is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   status: z.enum(["planning", "in-progress", "review", "completed", "on-hold"]),
@@ -66,7 +65,6 @@ export default function AdminProjectsPage() {
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
-      title: "",
       userId: "",
       description: "",
       status: "planning",
@@ -150,13 +148,12 @@ export default function AdminProjectsPage() {
     setIsEditMode(true);
     setSelectedProject(project);
     form.reset({
-      title: project.title,
       userId: project.userId.toString(),
       description: project.description,
       status: project.status as any,
       startDate: new Date(project.startDate).toISOString().split('T')[0],
       estimatedEndDate: new Date(project.estimatedEndDate).toISOString().split('T')[0],
-      name: project.name || "",
+      name: project.name || (project.title || ""), // Use title as fallback for name if needed
       serviceType: project.serviceType || "Web Development",
       completionPercentage: project.completionPercentage,
     });
@@ -250,7 +247,7 @@ export default function AdminProjectsPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-xl flex items-center gap-2">
-                      {project.title}
+                      {project.name || project.title}
                       {getProjectStatusBadge(project.status)}
                     </CardTitle>
                     <CardDescription className="mt-1">
@@ -350,20 +347,6 @@ export default function AdminProjectsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel>Project Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter project title" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem className="col-span-2">
@@ -371,9 +354,6 @@ export default function AdminProjectsPage() {
                       <FormControl>
                         <Input placeholder="Enter project name" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        A shorter name used for quick reference
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
