@@ -93,8 +93,10 @@ export default function NewInvoicePage() {
   // Create invoice mutation
   const createInvoice = useMutation({
     mutationFn: async (data: InvoiceFormValues) => {
+      // Convert numeric values to strings as expected by the server
       const res = await apiRequest('POST', `/api/projects/${data.projectId}/invoices`, {
         ...data,
+        amount: data.amount.toString(), // Convert amount to string
         projectId: parseInt(data.projectId),
       });
       return res.json();
