@@ -817,6 +817,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to verify user" });
     }
   });
+  
+  app.put("/api/admin/users/:id/block", async (req, res) => {
+    try {
+      // Ensure user is authenticated and is an admin
+      if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const { blocked } = req.body;
+      
+      if (typeof blocked !== 'boolean') {
+        return res.status(400).json({ message: "Blocked status is required" });
+      }
+      
+      // Prevent blocking yourself
+      if (req.user.id === id) {
+        return res.status(400).json({ message: "You cannot block your own account" });
+      }
+      
+      const updatedUser = await storage.blockUser(id, blocked);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error blocking/unblocking user:", errorMessage);
+      res.status(500).json({ message: "Failed to update user block status" });
+    }
+  });
+  
+  app.put("/api/admin/users/:id/promote", async (req, res) => {
+    try {
+      // Ensure user is authenticated and is an admin
+      if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const { isAdmin } = req.body;
+      
+      if (typeof isAdmin !== 'boolean') {
+        return res.status(400).json({ message: "Admin status is required" });
+      }
+      
+      // Prevent demoting yourself
+      if (req.user.id === id && !isAdmin) {
+        return res.status(400).json({ message: "You cannot remove your own admin status" });
+      }
+      
+      const updatedUser = await storage.promoteUser(id, isAdmin);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error updating user admin status:", errorMessage);
+      res.status(500).json({ message: "Failed to update user admin status" });
+    }
+  });
+  
+  app.delete("/api/admin/users/:id", async (req, res) => {
+    try {
+      // Ensure user is authenticated and is an admin
+      if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const id = parseInt(req.params.id);
+      
+      // Don't allow deleting the current user
+      if (req.user.id === id) {
+        return res.status(400).json({ message: "You cannot delete your own account" });
+      }
+      
+      const success = await storage.deleteUser(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error deleting user:", errorMessage);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
 
   // API endpoint for creating projects for a specific user
   app.post("/api/admin/users/:id/projects", async (req, res) => {

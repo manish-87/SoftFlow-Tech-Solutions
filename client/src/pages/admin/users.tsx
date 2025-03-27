@@ -13,7 +13,12 @@ import {
   Search, 
   FileText, 
   FolderPlus, 
-  PlusCircle
+  PlusCircle,
+  UserCog,
+  Lock,
+  Unlock,
+  Trash2,
+  ShieldAlert
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,6 +85,9 @@ export default function UsersManagement() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [confirmingVerifyUser, setConfirmingVerifyUser] = useState<User | null>(null);
+  const [confirmingBlockUser, setConfirmingBlockUser] = useState<{user: User | null, block: boolean}>({user: null, block: false});
+  const [confirmingPromoteUser, setConfirmingPromoteUser] = useState<User | null>(null);
+  const [confirmingDeleteUser, setConfirmingDeleteUser] = useState<User | null>(null);
   const [addProjectUser, setAddProjectUser] = useState<User | null>(null);
   
   // Fetch all users
@@ -180,6 +188,77 @@ export default function UsersManagement() {
       .toUpperCase();
   };
   
+  // Block/unblock user mutation
+  const blockUserMutation = useMutation({
+    mutationFn: async ({ userId, blocked }: { userId: number, blocked: boolean }) => {
+      const res = await apiRequest("PUT", `/api/admin/users/${userId}/block`, { blocked });
+      return await res.json();
+    },
+    onSuccess: (user) => {
+      toast({
+        title: user.isBlocked ? "User blocked" : "User unblocked",
+        description: user.isBlocked 
+          ? `${user.username} has been blocked and can no longer log in.` 
+          : `${user.username} has been unblocked and can now log in.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setConfirmingBlockUser({user: null, block: false});
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Action failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Promote user to admin mutation
+  const promoteUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const res = await apiRequest("PUT", `/api/admin/users/${userId}/promote`, { isAdmin: true });
+      return await res.json();
+    },
+    onSuccess: (user) => {
+      toast({
+        title: "User promoted",
+        description: `${user.username} has been promoted to administrator.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setConfirmingPromoteUser(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Promotion failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const res = await apiRequest("DELETE", `/api/admin/users/${userId}`);
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "User deleted",
+        description: "User has been permanently deleted from the system.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setConfirmingDeleteUser(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Deletion failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleVerifyClick = (user: User) => {
     setConfirmingVerifyUser(user);
   };
@@ -187,6 +266,39 @@ export default function UsersManagement() {
   const confirmVerify = () => {
     if (confirmingVerifyUser) {
       verifyUserMutation.mutate(confirmingVerifyUser.id);
+    }
+  };
+  
+  const handleBlockClick = (user: User, block: boolean) => {
+    setConfirmingBlockUser({user, block});
+  };
+  
+  const confirmBlock = () => {
+    if (confirmingBlockUser.user) {
+      blockUserMutation.mutate({ 
+        userId: confirmingBlockUser.user.id, 
+        blocked: confirmingBlockUser.block 
+      });
+    }
+  };
+  
+  const handlePromoteClick = (user: User) => {
+    setConfirmingPromoteUser(user);
+  };
+  
+  const confirmPromote = () => {
+    if (confirmingPromoteUser) {
+      promoteUserMutation.mutate(confirmingPromoteUser.id);
+    }
+  };
+  
+  const handleDeleteClick = (user: User) => {
+    setConfirmingDeleteUser(user);
+  };
+  
+  const confirmDelete = () => {
+    if (confirmingDeleteUser) {
+      deleteUserMutation.mutate(confirmingDeleteUser.id);
     }
   };
   
@@ -266,6 +378,7 @@ export default function UsersManagement() {
                         <TableHead>User</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Phone</TableHead>
+                        <TableHead>Verification</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Actions</TableHead>
@@ -310,6 +423,17 @@ export default function UsersManagement() {
                             )}
                           </TableCell>
                           <TableCell>
+                            {user.isBlocked ? (
+                              <Badge variant="destructive">
+                                <Lock className="h-3 w-3 mr-1" /> Blocked
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-green-100">
+                                <Unlock className="h-3 w-3 mr-1" /> Active
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
                             {user.isAdmin ? (
                               <Badge variant="secondary">
                                 <Shield className="h-3 w-3 mr-1" /> Admin
@@ -350,6 +474,54 @@ export default function UsersManagement() {
                                 >
                                   <FolderPlus className="h-3 w-3 mr-2" />
                                   Add Project
+                                </Button>
+                              )}
+                              
+                              {!user.isAdmin && (
+                                user.isBlocked ? (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => handleBlockClick(user, false)}
+                                    className="bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
+                                  >
+                                    <Unlock className="h-3 w-3 mr-2" />
+                                    Unblock
+                                  </Button>
+                                ) : (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => handleBlockClick(user, true)}
+                                    className="bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                                  >
+                                    <Lock className="h-3 w-3 mr-2" />
+                                    Block
+                                  </Button>
+                                )
+                              )}
+                              
+                              {!user.isAdmin && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handlePromoteClick(user)}
+                                  className="bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100"
+                                >
+                                  <ShieldAlert className="h-3 w-3 mr-2" />
+                                  Make Admin
+                                </Button>
+                              )}
+                              
+                              {!user.isAdmin && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleDeleteClick(user)}
+                                  className="bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                                >
+                                  <Trash2 className="h-3 w-3 mr-2" />
+                                  Delete
                                 </Button>
                               )}
                             </div>

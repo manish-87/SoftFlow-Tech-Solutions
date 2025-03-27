@@ -78,6 +78,12 @@ export function setupAuth(app: Express) {
           return done(null, false, { message: "Incorrect password" });
         }
         
+        // Check if the user is blocked
+        if (user.isBlocked) {
+          console.log(`Login blocked for user ${username}: Account is blocked`);
+          return done(null, false, { message: "Your account has been blocked. Please contact administration." });
+        }
+        
         console.log(`Login successful for ${username}, isAdmin: ${user.isAdmin}`);
         return done(null, user);
       } catch (error) {
@@ -94,6 +100,17 @@ export function setupAuth(app: Express) {
   passport.deserializeUser(async (id: number, done) => {
     try {
       const user = await storage.getUser(id);
+      
+      // If user doesn't exist or is blocked, don't deserialize
+      if (!user) {
+        return done(null, false);
+      }
+      
+      // Check if the user has been blocked since their last login
+      if (user.isBlocked) {
+        return done(null, false);
+      }
+      
       done(null, user);
     } catch (error) {
       done(error);

@@ -25,6 +25,9 @@ export interface IStorage {
   createUser(user: InsertUser & { isAdmin?: boolean }): Promise<User>;
   updateUser(id: number, userData: Partial<Omit<User, 'id' | 'password' | 'isAdmin'>>): Promise<User | undefined>;
   verifyUser(id: number): Promise<User | undefined>;
+  blockUser(id: number, blocked: boolean): Promise<User | undefined>;
+  promoteUser(id: number, isAdmin: boolean): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
   getAllUsers(): Promise<User[]>;
   
   // Blog posts
@@ -255,6 +258,7 @@ export class MemStorage implements IStorage {
       id,
       isAdmin: insertUser.isAdmin || false,
       isVerified: false,
+      isBlocked: false,
       photo: null,
       bio: null,
       githubUrl: null,
@@ -290,6 +294,36 @@ export class MemStorage implements IStorage {
     
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+  
+  async blockUser(id: number, blocked: boolean): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+    
+    const updatedUser: User = {
+      ...existingUser,
+      isBlocked: blocked,
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+  
+  async promoteUser(id: number, isAdmin: boolean): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+    
+    const updatedUser: User = {
+      ...existingUser,
+      isAdmin,
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+  
+  async deleteUser(id: number): Promise<boolean> {
+    return this.users.delete(id);
   }
   
   async getAllUsers(): Promise<User[]> {
@@ -666,6 +700,7 @@ export class DatabaseStorage implements IStorage {
         password: insertUser.password,
         isAdmin: insertUser.isAdmin || false,
         isVerified: insertUser.isAdmin || false, // Auto-verify admin users, regular users need approval
+        isBlocked: false
       })
       .returning();
     return user;
@@ -687,6 +722,29 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return updatedUser;
+  }
+  
+  async blockUser(id: number, blocked: boolean): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ isBlocked: blocked })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+  
+  async promoteUser(id: number, isAdmin: boolean): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ isAdmin })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+  
+  async deleteUser(id: number): Promise<boolean> {
+    await db.delete(users).where(eq(users.id, id));
+    return true;
   }
   
   async getAllUsers(): Promise<User[]> {
