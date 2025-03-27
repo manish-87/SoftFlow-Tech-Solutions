@@ -144,7 +144,7 @@ export default function DashboardPage() {
       case "pending":
         return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending Review</Badge>;
       case "reviewed":
-        return <Badge variant="outline" className="bg-gray-100 text-gray-800">Reviewed</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800">Reviewed</Badge>;
       case "interviewing":
         return <Badge variant="outline" className="bg-purple-100 text-purple-800">Interviewing</Badge>;
       case "hired":
@@ -160,7 +160,7 @@ export default function DashboardPage() {
   const getProjectStatusBadge = (status: string) => {
     switch (status) {
       case "planning":
-        return <Badge variant="outline" className="bg-gray-100 text-gray-800">Planning</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800">Planning</Badge>;
       case "in-progress":
         return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">In Progress</Badge>;
       case "review":
