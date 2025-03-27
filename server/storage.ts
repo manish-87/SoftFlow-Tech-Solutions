@@ -626,11 +626,29 @@ export class MemStorage implements IStorage {
   }
   
   async getAllProjects(): Promise<Project[]> {
-    return Array.from(this.projectsList.values())
+    // Get all projects and filter out any potentially invalid projects
+    const allProjects = Array.from(this.projectsList.values())
+      .filter(project => {
+        return (
+          project && 
+          typeof project === 'object' &&
+          project.id !== undefined && 
+          !isNaN(Number(project.id)) &&
+          (project.title || project.name) // Ensure project has at least a title or name
+        );
+      })
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      
+    return allProjects;
   }
 
   async getProject(id: number): Promise<Project | undefined> {
+    // Check for invalid id (NaN)
+    if (isNaN(id) || id <= 0) {
+      console.error("Error getting project: Invalid project ID", id);
+      return undefined;
+    }
+    
     return this.projectsList.get(id);
   }
 

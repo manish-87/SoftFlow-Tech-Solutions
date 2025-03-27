@@ -953,19 +953,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Make sure all projects have valid properties before sending to client
       const validProjects = projects.filter(project => {
         try {
-          // Check for valid project structure
+          // Check for valid project structure with extensive validation
           return (
             project && 
+            typeof project === 'object' &&
             project.id !== undefined && 
-            Number.isInteger(project.id) && 
+            !isNaN(Number(project.id)) &&
+            Number.isInteger(Number(project.id)) && 
             // Allow title or name (handle both project form variations)
-            (project.title || project.name)
+            (
+              (typeof project.title === 'string' && project.title.trim().length > 0) ||
+              (typeof project.name === 'string' && project.name.trim().length > 0)
+            )
           );
         } catch (err) {
           console.error("Error filtering project:", err);
           return false;
         }
       });
+      
+      if (validProjects.length === 0 && projects.length > 0) {
+        console.warn(`Filtered out ${projects.length} invalid projects`);
+      }
       
       res.json(validProjects);
     } catch (error) {

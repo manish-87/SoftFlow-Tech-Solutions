@@ -166,6 +166,7 @@ export default function NewInvoicePage() {
                           ) : projects && Array.isArray(projects) && projects.length > 0 ? (
                             projects.map((project: Project) => (
                               <SelectItem key={project.id} value={project.id.toString()}>
+                                {/* Handle both title and name fields for consistency between project creation forms */}
                                 {project.title || project.name || `Project #${project.id}`}
                               </SelectItem>
                             ))
