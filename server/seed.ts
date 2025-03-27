@@ -31,7 +31,16 @@ async function main() {
     });
     console.log('Admin user created successfully');
   } else {
-    console.log('Admin user already exists');
+    // Update the admin password to ensure it's correct and make sure admin is verified
+    const password = await hashPassword('JMk@475869');
+    await db.update(users)
+      .set({ 
+        password: password,
+        isVerified: true,
+        isAdmin: true
+      })
+      .where(eq(users.username, 'admin'));
+    console.log('Admin user updated with verified status and correct password');
   }
 
   console.log('Seeding completed');
