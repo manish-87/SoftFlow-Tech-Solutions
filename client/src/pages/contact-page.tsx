@@ -132,7 +132,7 @@ export default function ContactPage() {
     <Layout>
       <div className="pt-20">
         {/* Hero Section */}
-        <section className="bg-primary text-white py-20">
+        <section className="bg-gradient-to-br from-sky-50 via-sky-50 to-white py-20">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="max-w-3xl mx-auto text-center"
@@ -140,10 +140,10 @@ export default function ContactPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sans">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sans text-neutral-800">
                 Contact Us
               </h1>
-              <p className="text-lg opacity-90">
+              <p className="text-lg text-neutral-700">
                 We'd love to hear from you. Get in touch with our team.
               </p>
             </motion.div>
@@ -155,7 +155,7 @@ export default function ContactPage() {
           <div className="container mx-auto px-4 md:px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
               <motion.div
-                className="bg-neutral-50 p-8 rounded-lg text-center"
+                className="bg-white p-8 rounded-lg text-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -172,7 +172,7 @@ export default function ContactPage() {
               </motion.div>
 
               <motion.div
-                className="bg-neutral-50 p-8 rounded-lg text-center"
+                className="bg-white p-8 rounded-lg text-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -189,7 +189,7 @@ export default function ContactPage() {
               </motion.div>
 
               <motion.div
-                className="bg-neutral-50 p-8 rounded-lg text-center"
+                className="bg-white p-8 rounded-lg text-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -327,7 +327,7 @@ export default function ContactPage() {
 
                     <Button
                       type="submit"
-                      className="w-full bg-red-500 hover:bg-red-600"
+                      className="w-full bg-sky-500 hover:bg-sky-600 transition-colors"
                       disabled={messageMutation.isPending}
                     >
                       {messageMutation.isPending
@@ -361,10 +361,10 @@ export default function ContactPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 bg-neutral-100">
+        <section className="py-16 bg-gradient-to-br from-sky-50 via-sky-50 to-white">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold font-sans mb-4">
+              <h2 className="text-3xl font-bold font-sans mb-4 text-neutral-800">
                 Frequently Asked Questions
               </h2>
               <p className="text-neutral-700 max-w-2xl mx-auto">
@@ -402,7 +402,7 @@ export default function ContactPage() {
               ].map((faq, index) => (
                 <motion.div
                   key={index}
-                  className="mb-4 bg-white p-6 rounded-lg shadow-sm"
+                  className="mb-4 bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
