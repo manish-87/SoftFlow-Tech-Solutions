@@ -729,6 +729,128 @@ export default function UsersManagement() {
           </Form>
         </DialogContent>
       </Dialog>
+      
+      {/* Promote to Admin Confirmation Dialog */}
+      <AlertDialog open={!!confirmingPromoteUser} onOpenChange={() => setConfirmingPromoteUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Make Admin</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to make {confirmingPromoteUser?.username} an admin?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <p>This action:</p>
+            <ul className="list-disc ml-6 mt-2">
+              <li>Gives the user full administrative access to the system</li>
+              <li>Allows them to manage all users, content, and settings</li>
+              <li>Cannot be easily reversed, and should be granted carefully</li>
+            </ul>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmPromote}>
+              {promoteUserMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Promoting...
+                </>
+              ) : (
+                <>
+                  <ShieldAlert className="h-4 w-4 mr-2" />
+                  Make Admin
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Delete User Confirmation Dialog */}
+      <AlertDialog open={!!confirmingDeleteUser} onOpenChange={() => setConfirmingDeleteUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {confirmingDeleteUser?.username}?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <p>This action:</p>
+            <ul className="list-disc ml-6 mt-2">
+              <li>Permanently removes the user account and all associated data</li>
+              <li>Cannot be undone</li>
+            </ul>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              {deleteUserMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Block User Confirmation Dialog */}
+      <AlertDialog 
+        open={!!confirmingBlockUser.user} 
+        onOpenChange={() => setConfirmingBlockUser({user: null, block: false})}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmingBlockUser.block ? "Block User" : "Unblock User"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {confirmingBlockUser.block ? "block" : "unblock"} {confirmingBlockUser.user?.username}?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            {confirmingBlockUser.block ? (
+              <>
+                <p>This action:</p>
+                <ul className="list-disc ml-6 mt-2">
+                  <li>Prevents the user from logging into the system</li>
+                  <li>Does not delete their account or data</li>
+                  <li>Can be reversed later</li>
+                </ul>
+              </>
+            ) : (
+              <p>This action will restore full access to this user's account.</p>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBlock} className={confirmingBlockUser.block ? "bg-orange-600 hover:bg-orange-700" : ""}>
+              {blockUserMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {confirmingBlockUser.block ? "Blocking..." : "Unblocking..."}
+                </>
+              ) : (
+                <>
+                  {confirmingBlockUser.block ? (
+                    <UserX className="h-4 w-4 mr-2" />
+                  ) : (
+                    <UserCheck className="h-4 w-4 mr-2" />
+                  )}
+                  {confirmingBlockUser.block ? "Block User" : "Unblock User"}
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
