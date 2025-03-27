@@ -9,25 +9,82 @@ import serviceIconsSrc from "../../assets/service-icons.svg";
 
 // We'll map backend icon names to our SVG icon IDs
 const iconNameMapping: Record<string, string> = {
+  // Development icons
   "code": "frontend-dev",
   "server": "backend-dev",
+  "api": "api-integration",
+  "database": "database-services",
+  "git": "version-control",
+  
+  // Mobile icons
   "smartphone": "mobile-dev",
+  "android": "android-dev",
+  "apple": "ios-dev",
+  "flutter": "cross-platform",
+  
+  // Cloud & DevOps
   "cloud": "cloud-services",
+  "aws": "aws-services",
+  "azure": "azure-services",
+  "google-cloud": "gcp-services",
+  "kubernetes": "kubernetes",
+  "docker": "containerization",
+  
+  // Data & Analytics
   "bar-chart": "data-analytics",
-  "lightbulb": "consulting"
+  "data": "big-data",
+  "ai": "ai-services",
+  "ml": "machine-learning",
+  "analytics": "business-intelligence",
+  
+  // Business & Consulting
+  "lightbulb": "consulting",
+  "briefcase": "business-solutions",
+  "handshake": "partnership",
+  "presentation": "training",
+  
+  // Security
+  "security": "security-services",
+  "shield": "cyber-security",
+  "lock": "data-protection",
+  
+  // Testing & QA
+  "testing": "quality-assurance",
+  "quality": "quality-control",
+  "bug": "bug-fixing",
+  
+  // UI/UX
+  "design": "ui-design",
+  "palette": "ux-design",
+  "layout": "responsive-design"
 };
 
 // Fallback icons for any missing mappings
 const fallbackIcons = [
   "system-integration",
   "ai-services",
-  "security-services"
+  "security-services",
+  "web-development",
+  "devops",
+  "qa-testing",
+  "business-analysis",
+  "project-management",
+  "custom-development"
 ];
 
 // SVG Icon Component
 const ServiceIcon = ({ iconName }: { iconName: string }) => {
-  // Use the mapping if available, otherwise use the first fallback icon
-  const iconId = iconNameMapping[iconName] || fallbackIcons[0];
+  // More intelligent fallback selection based on the service name
+  let iconId = iconNameMapping[iconName];
+  
+  // If no direct mapping exists, use a more intelligent fallback selection
+  if (!iconId) {
+    // Get a fallback icon based on the hash of the iconName string
+    // This ensures the same service consistently gets the same fallback icon
+    const hash = iconName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const fallbackIndex = hash % fallbackIcons.length;
+    iconId = fallbackIcons[fallbackIndex];
+  }
   
   return (
     <svg className="w-12 h-12" aria-hidden="true">

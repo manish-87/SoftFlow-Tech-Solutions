@@ -18,9 +18,6 @@ import { Service, InsertService } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import AdminLayout from "@/components/admin/admin-layout";
 import { useToast } from "@/hooks/use-toast";
-// Redirecting to updated services page
-import { useEffect } from "react";
-import { useLocation } from "wouter";
 
 import {
   Dialog,
@@ -77,13 +74,6 @@ type ServiceFormValues = z.infer<typeof serviceFormSchema>;
 
 export default function Services() {
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
-  
-  // Redirect to the improved services page
-  useEffect(() => {
-    setLocation('/admin/services-new');
-  }, [setLocation]);
-  
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -266,6 +256,27 @@ export default function Services() {
     toggleMutation.mutate({ id: service.id, active: !service.active });
   };
 
+  // Generate slug from title
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim();
+  };
+
+  // Auto-fill slug when title changes for create form
+  const autoFillSlug = (title: string) => {
+    const slug = generateSlug(title);
+    createForm.setValue('slug', slug);
+  };
+
+  // Auto-fill slug when title changes for edit form
+  const autoFillEditSlug = (title: string) => {
+    const slug = generateSlug(title);
+    editForm.setValue('slug', slug);
+  };
+
   // Filter services based on search query
   const filteredServices = services
     ? services.filter(
@@ -408,7 +419,14 @@ export default function Services() {
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="Frontend Development" {...field} />
+                      <Input 
+                        placeholder="Frontend Development" 
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          autoFillSlug(e.target.value);
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -437,7 +455,14 @@ export default function Services() {
                       <Input placeholder="code" {...field} />
                     </FormControl>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Available icon names: code, server, smartphone, cloud, bar-chart, lightbulb
+                      <strong>Development:</strong> code, server, api, database, git<br />
+                      <strong>Mobile:</strong> smartphone, android, apple, flutter<br />
+                      <strong>Cloud/DevOps:</strong> cloud, aws, azure, google-cloud, kubernetes, docker<br />
+                      <strong>Data:</strong> bar-chart, data, ai, ml, analytics<br />
+                      <strong>Business:</strong> lightbulb, briefcase, handshake, presentation<br />
+                      <strong>Security:</strong> security, shield, lock<br />
+                      <strong>Testing:</strong> testing, quality, bug<br />
+                      <strong>UI/UX:</strong> design, palette, layout
                     </p>
                     <FormMessage />
                   </FormItem>
@@ -509,12 +534,15 @@ export default function Services() {
                 <Button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="ml-2"
                 >
-                  {createMutation.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {createMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Service"
                   )}
-                  Create Service
                 </Button>
               </DialogFooter>
             </form>
@@ -528,7 +556,7 @@ export default function Services() {
           <DialogHeader>
             <DialogTitle>Edit Service</DialogTitle>
             <DialogDescription>
-              Update the service details and appearance.
+              Edit the service details and preferences.
             </DialogDescription>
           </DialogHeader>
           <Form {...editForm}>
@@ -543,7 +571,16 @@ export default function Services() {
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input 
+                        placeholder="Frontend Development" 
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          if (selectedService && selectedService.title === selectedService.slug) {
+                            autoFillEditSlug(e.target.value);
+                          }
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -556,7 +593,7 @@ export default function Services() {
                   <FormItem>
                     <FormLabel>Slug</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input placeholder="frontend-development" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -569,10 +606,17 @@ export default function Services() {
                   <FormItem>
                     <FormLabel>Icon Name</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input placeholder="code" {...field} />
                     </FormControl>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Available icon names: code, server, smartphone, cloud, bar-chart, lightbulb
+                      <strong>Development:</strong> code, server, api, database, git<br />
+                      <strong>Mobile:</strong> smartphone, android, apple, flutter<br />
+                      <strong>Cloud/DevOps:</strong> cloud, aws, azure, google-cloud, kubernetes, docker<br />
+                      <strong>Data:</strong> bar-chart, data, ai, ml, analytics<br />
+                      <strong>Business:</strong> lightbulb, briefcase, handshake, presentation<br />
+                      <strong>Security:</strong> security, shield, lock<br />
+                      <strong>Testing:</strong> testing, quality, bug<br />
+                      <strong>UI/UX:</strong> design, palette, layout
                     </p>
                     <FormMessage />
                   </FormItem>
@@ -586,6 +630,7 @@ export default function Services() {
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea
+                        placeholder="Describe the service..."
                         className="min-h-[100px]"
                         {...field}
                       />
@@ -605,6 +650,7 @@ export default function Services() {
                         <Input
                           type="number"
                           min={0}
+                          placeholder="0"
                           {...field}
                         />
                       </FormControl>
@@ -642,12 +688,15 @@ export default function Services() {
                 <Button
                   type="submit"
                   disabled={updateMutation.isPending}
-                  className="ml-2"
                 >
-                  {updateMutation.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {updateMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Service"
                   )}
-                  Update Service
                 </Button>
               </DialogFooter>
             </form>
@@ -655,40 +704,31 @@ export default function Services() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
+      {/* Delete Service Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the service{" "}
-              <span className="font-semibold">
-                {selectedService?.title}
-              </span>
-              . This action cannot be undone.
+              This action cannot be undone. This will permanently delete the
+              service <strong>{selectedService?.title}</strong> and remove it from our
+              servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={() => {
-                setIsDeleteDialogOpen(false);
-                setSelectedService(null);
-              }}
-            >
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-red-500 hover:bg-red-600"
-              disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
               )}
-              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

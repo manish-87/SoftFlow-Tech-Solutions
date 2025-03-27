@@ -117,21 +117,92 @@ export default function ServicesPage() {
 
 // Helper function to render icon based on icon name
 function getServiceIcon(iconName: string | null) {
-  // This is a placeholder - ideally you would import and use actual icons
+  // Expanded service icons for better visual representation
   switch (iconName) {
+    // Development icons
     case 'code':
       return '💻';
     case 'server':
       return '🖥️';
+    case 'api':
+      return '🔌';
+    case 'database':
+      return '🗄️';
+    case 'git':
+      return '📊';
+    
+    // Mobile icons
     case 'smartphone':
       return '📱';
+    case 'android':
+      return '🤖';
+    case 'apple':
+      return '🍎';
+    case 'flutter':
+      return '📱';
+    
+    // Cloud & DevOps
     case 'cloud':
       return '☁️';
+    case 'aws':
+      return '🌩️';
+    case 'azure':
+      return '☁️';
+    case 'google-cloud':
+      return '☁️';
+    case 'kubernetes':
+      return '🚢';
+    case 'docker':
+      return '🐳';
+    
+    // Data & Analytics
     case 'bar-chart':
       return '📊';
+    case 'data':
+      return '📈';
+    case 'ai':
+      return '🤖';
+    case 'ml':
+      return '🧠';
+    case 'analytics':
+      return '📉';
+    
+    // Business & Consulting
     case 'lightbulb':
       return '💡';
+    case 'briefcase':
+      return '💼';
+    case 'handshake':
+      return '🤝';
+    case 'presentation':
+      return '📝';
+    
+    // Security
+    case 'security':
+      return '🔒';
+    case 'shield':
+      return '🛡️';
+    case 'lock':
+      return '🔐';
+    
+    // Testing & QA
+    case 'testing':
+      return '🧪';
+    case 'quality':
+      return '✅';
+    case 'bug':
+      return '🐛';
+    
+    // UI/UX
+    case 'design':
+      return '🎨';
+    case 'palette':
+      return '🖌️';
+    case 'layout':
+      return '📐';
+    
+    // Default for any other icon
     default:
-      return '🔧';
+      return '⚙️';
   }
 }

@@ -17,6 +17,7 @@ import Messages from "@/pages/admin/messages";
 import Partners from "@/pages/admin/partners";
 import Careers from "@/pages/admin/careers";
 import Services from "@/pages/admin/services";
+import ServicesNew from "@/pages/admin/services-new";
 import UsersManagement from "@/pages/admin/users";
 import NotFound from "@/pages/not-found";
 import { AuthProvider } from "./hooks/use-auth";
@@ -47,6 +48,7 @@ function Router() {
       <ProtectedRoute path="/admin/partners" component={Partners} adminOnly />
       <ProtectedRoute path="/admin/careers" component={Careers} adminOnly />
       <ProtectedRoute path="/admin/services" component={Services} adminOnly />
+      <ProtectedRoute path="/admin/services-new" component={ServicesNew} adminOnly />
 
       {/* Fallback to 404 */}
       <Route component={NotFound} />

@@ -50,7 +50,7 @@ export default function Hero() {
             transition={{ duration: 0.7 }}
           >
             <img 
-              src="../../assets/hero-image.svg" 
+              src="/hero-image.svg" 
               alt="AI Technology Illustration" 
               className="max-w-full h-auto rounded-lg"
             />
