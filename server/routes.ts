@@ -1097,6 +1097,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all invoices (for admin) or user's invoices (for regular users)
+  app.get("/api/invoices", async (req, res) => {
+    try {
+      // Only authenticated users can access invoices
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      let invoices;
+      
+      if (req.user.isAdmin) {
+        // Admin can see all invoices
+        invoices = await storage.getAllInvoices();
+      } else {
+        // Regular users can only see their own invoices
+        const userProjects = await storage.getProjects(req.user.id);
+        if (!userProjects.length) {
+          return res.json([]); // No projects means no invoices
+        }
+        
+        // Get all invoices for user's projects
+        const projectIds = userProjects.map(project => project.id);
+        invoices = await storage.getUserInvoices(projectIds);
+      }
+      
+      res.json(invoices);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error getting invoices:", errorMessage);
+      res.status(500).json({ message: "Failed to get invoices" });
+    }
+  });
+
   // Project invoice endpoints
   app.get("/api/projects/:id/invoices", async (req, res) => {
     try {

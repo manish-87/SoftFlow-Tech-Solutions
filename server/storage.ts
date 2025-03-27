@@ -100,6 +100,8 @@ export interface IStorage {
   createInvoice(invoice: InsertInvoice): Promise<Invoice>;
   updateInvoiceStatus(id: number, status: string): Promise<Invoice | undefined>;
   deleteInvoice(id: number): Promise<boolean>;
+  getAllInvoices(): Promise<Invoice[]>;
+  getUserInvoices(projectIds: number[]): Promise<Invoice[]>;
   
   // Invoice Items
   getInvoiceItems(invoiceId: number): Promise<InvoiceItem[]>;
@@ -769,6 +771,17 @@ export class MemStorage implements IStorage {
     this.invoicesList.set(id, updatedInvoice);
     return updatedInvoice;
   }
+  
+  async getAllInvoices(): Promise<Invoice[]> {
+    return Array.from(this.invoicesList.values())
+      .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime());
+  }
+  
+  async getUserInvoices(projectIds: number[]): Promise<Invoice[]> {
+    return Array.from(this.invoicesList.values())
+      .filter(invoice => projectIds.includes(invoice.projectId))
+      .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime());
+  }
 
   async deleteInvoice(id: number): Promise<boolean> {
     // First delete all invoice items and payments associated with this invoice
@@ -1368,6 +1381,25 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(invoices)
       .where(eq(invoices.projectId, projectId))
+      .orderBy(desc(invoices.issueDate));
+  }
+  
+  async getAllInvoices(): Promise<Invoice[]> {
+    return await db
+      .select()
+      .from(invoices)
+      .orderBy(desc(invoices.issueDate));
+  }
+  
+  async getUserInvoices(projectIds: number[]): Promise<Invoice[]> {
+    if (!projectIds.length) {
+      return [];
+    }
+    
+    return await db
+      .select()
+      .from(invoices)
+      .where(invoices.projectId.in(projectIds))
       .orderBy(desc(invoices.issueDate));
   }
 
