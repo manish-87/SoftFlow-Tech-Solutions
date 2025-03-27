@@ -4,7 +4,7 @@ import { ArrowRight, Sparkles, Cloud, Code, Bot } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="relative bg-gradient-to-br from-pink-50 via-rose-50 to-white pt-20">
+    <section className="relative bg-gradient-to-br from-blue-50 via-blue-50 to-white pt-20">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
