@@ -152,7 +152,7 @@ export default function NewInvoicePage() {
                         <SelectContent>
                           {projects?.map((project) => (
                             <SelectItem key={project.id} value={project.id.toString()}>
-                              {project.name}
+                              {project.title}
                             </SelectItem>
                           ))}
                         </SelectContent>

@@ -1045,6 +1045,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the project to check permissions
       const project = await storage.getProject(invoice.projectId);
       
+      // Check if project exists
+      if (!project) {
+        return res.status(404).json({ message: "Project for this invoice not found" });
+      }
+      
       // Users can only see invoices for their own projects unless they are admin
       if (project.userId !== req.user.id && !req.user.isAdmin) {
         return res.status(403).json({ message: "Unauthorized" });
@@ -1073,6 +1078,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get the project to check permissions
       const project = await storage.getProject(invoice.projectId);
+      
+      // Check if project exists
+      if (!project) {
+        return res.status(404).json({ message: "Project for this invoice not found" });
+      }
       
       // Users can only see invoice items for their own projects unless they are admin
       if (project.userId !== req.user.id && !req.user.isAdmin) {
@@ -1103,6 +1113,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get the project to check permissions
       const project = await storage.getProject(invoice.projectId);
+      
+      // Check if project exists
+      if (!project) {
+        return res.status(404).json({ message: "Project for this invoice not found" });
+      }
       
       // Users can only see invoice payments for their own projects unless they are admin
       if (project.userId !== req.user.id && !req.user.isAdmin) {
