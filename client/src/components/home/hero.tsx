@@ -50,9 +50,9 @@ export default function Hero() {
             transition={{ duration: 0.7 }}
           >
             <img 
-              src="/hero-image.svg" 
+              src="https://images.unsplash.com/photo-1531746790731-6c087fecd65a?q=80&w=2006&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
               alt="AI Technology Illustration" 
-              className="max-w-full h-auto rounded-lg"
+              className="max-w-full h-auto rounded-lg object-cover shadow-xl"
             />
           </motion.div>
         </div>

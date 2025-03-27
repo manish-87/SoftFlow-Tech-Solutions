@@ -464,8 +464,13 @@ export class MemStorage implements IStorage {
     const id = this.currentApplicationId++;
     const now = new Date();
     const newApplication: Application = { 
-      ...application, 
       id,
+      careerId: application.careerId,
+      name: application.name,
+      email: application.email,
+      phone: application.phone,
+      resume: application.resume,
+      coverLetter: application.coverLetter || null,
       status: "pending",
       createdAt: now
     };
@@ -857,7 +862,12 @@ export class DatabaseStorage implements IStorage {
     const [newApplication] = await db
       .insert(applications)
       .values({
-        ...application,
+        careerId: application.careerId,
+        name: application.name,
+        email: application.email,
+        phone: application.phone,
+        resume: application.resume,
+        cover_letter: application.coverLetter || null,
         status: "pending",
       })
       .returning();

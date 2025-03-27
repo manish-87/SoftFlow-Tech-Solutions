@@ -101,9 +101,6 @@ export const applications = pgTable("applications", {
   phone: text("phone").notNull(),
   resume: text("resume").notNull(), // PDF resume URL
   coverLetter: text("cover_letter"),
-  githubUrl: text("github_url"),
-  linkedinUrl: text("linkedin_url"),
-  portfolioUrl: text("portfolio_url"),
   status: text("status").default("pending").notNull(), // pending, reviewed, interviewing, rejected, hired
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
