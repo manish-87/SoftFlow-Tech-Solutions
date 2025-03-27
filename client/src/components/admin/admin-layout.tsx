@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Redirect } from "wouter";
 import AdminSidebar from "./sidebar";
 import { Button } from "@/components/ui/button";
-import { Menu, User, LogOut } from "lucide-react";
+import { Menu, User as UserIcon, LogOut } from "lucide-react";
 import { 
   Sheet,
   SheetContent,
@@ -19,9 +19,10 @@ import {
 
 interface AdminLayoutProps {
   children: ReactNode;
+  title?: string;
 }
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+export default function AdminLayout({ children, title }: AdminLayoutProps) {
   const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
 
@@ -53,7 +54,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <AdminSidebar />
             </SheetContent>
           </Sheet>
-          <div className="font-bold text-xl">SoftFlow Admin</div>
+          <div className="font-bold text-xl">{title ? title : 'SoftFlow Admin'}</div>
         </div>
         <UserMenu user={user} onLogout={handleLogout} />
       </header>
@@ -67,12 +68,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Main Content */}
         <div className="flex-1">
           {/* Top Navbar - Desktop */}
-          <header className="bg-white border-b border-neutral-200 h-16 items-center justify-end px-6 hidden lg:flex">
+          <header className="bg-white border-b border-neutral-200 h-16 items-center justify-between px-6 hidden lg:flex">
+            {title && <div className="font-bold text-xl">{title}</div>}
             <UserMenu user={user} onLogout={handleLogout} />
           </header>
 
           {/* Page Content */}
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 p-6">
+            {title && !children && <h1 className="text-2xl font-bold mb-6">{title}</h1>}
+            {children}
+          </main>
         </div>
       </div>
     </div>
@@ -84,7 +89,7 @@ function UserMenu({ user, onLogout }: { user: any; onLogout: () => void }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2">
-          <User className="h-5 w-5" />
+          <UserIcon className="h-5 w-5" />
           <span className="hidden sm:inline">{user.username}</span>
         </Button>
       </DropdownMenuTrigger>

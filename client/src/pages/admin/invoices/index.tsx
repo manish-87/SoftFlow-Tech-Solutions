@@ -291,5 +291,5 @@ export default function AdminInvoicesPage() {
     );
   }
   
-  return <AdminLayout>{content}</AdminLayout>;
+  return <AdminLayout title="Invoices">{content}</AdminLayout>;
 }

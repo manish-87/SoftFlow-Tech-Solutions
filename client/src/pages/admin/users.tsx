@@ -322,7 +322,7 @@ export default function UsersManagement() {
   };
   
   return (
-    <AdminLayout>
+    <AdminLayout title="User Management">
       <div className="container py-10">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8">
           <div>

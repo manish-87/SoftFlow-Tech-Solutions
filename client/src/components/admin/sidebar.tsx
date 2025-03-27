@@ -8,7 +8,9 @@ import {
   ArrowLeft,
   Home,
   Layers,
-  Users
+  Users,
+  FolderKanban,
+  Receipt
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +32,16 @@ export default function AdminSidebar() {
       name: "Users",
       href: "/admin/users",
       icon: <Users className="h-5 w-5" />,
+    },
+    {
+      name: "Projects",
+      href: "/admin/projects",
+      icon: <FolderKanban className="h-5 w-5" />,
+    },
+    {
+      name: "Invoices",
+      href: "/admin/invoices",
+      icon: <Receipt className="h-5 w-5" />,
     },
     {
       name: "Blog Management",

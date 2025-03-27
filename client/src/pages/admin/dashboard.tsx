@@ -127,7 +127,7 @@ export default function Dashboard() {
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Dashboard">
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight font-sans">Dashboard</h1>

@@ -502,5 +502,5 @@ export default function AdminInvoiceDetailPage() {
     );
   }
   
-  return <AdminLayout>{content}</AdminLayout>;
+  return <AdminLayout title="Invoice Details">{content}</AdminLayout>;
 }

@@ -350,5 +350,5 @@ export default function NewInvoicePage() {
     );
   }
   
-  return <AdminLayout>{content}</AdminLayout>;
+  return <AdminLayout title="Create Invoice">{content}</AdminLayout>;
 }

@@ -612,10 +612,10 @@ export default function DashboardPage() {
                                     </Badge>
                                   )}
                                   <Link href="/invoices">
-                                    <a className="text-xs text-primary flex items-center hover:underline">
+                                    <span className="text-xs text-primary flex items-center hover:underline cursor-pointer">
                                       <Receipt className="h-3 w-3 mr-1" />
                                       View Invoices
-                                    </a>
+                                    </span>
                                   </Link>
                                 </div>
                               </>

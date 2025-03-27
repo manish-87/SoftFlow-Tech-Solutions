@@ -116,7 +116,7 @@ export default function Partners() {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Partners Management">
       <div className="p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
