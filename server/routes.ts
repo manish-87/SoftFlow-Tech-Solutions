@@ -1006,7 +1006,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const projects = await storage.getProjects(userId);
       
-      // Filter out any invalid projects
+      // Filter out any invalid projects but be more lenient with title/name fields
       const validProjects = projects.filter(project => {
         return (
           project && 
@@ -1014,8 +1014,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           project.id !== undefined && 
           !isNaN(Number(project.id)) &&
           (
+            // If project has name, we're good
+            (typeof project.name === 'string' && project.name.trim().length > 0) ||
+            // Or if project has title, we're also good
             (typeof project.title === 'string' && project.title.trim().length > 0) ||
-            (typeof project.name === 'string' && project.name.trim().length > 0)
+            // Even if neither is a valid string, we still include the project
+            (project.id > 0) // As long as it has a valid ID, include it
           )
         );
       });
