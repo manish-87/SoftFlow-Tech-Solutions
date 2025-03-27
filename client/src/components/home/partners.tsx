@@ -56,11 +56,11 @@ const fallbackPartners = [
 
 // Partner logo component 
 const PartnerLogo = ({ partner }: { partner: { name: string, logo: string } }) => (
-  <div className="flex flex-col items-center justify-center space-y-3">
+  <div className="flex flex-col items-center justify-center space-y-2 mx-8">
     <img 
       src={partner.logo} 
       alt={`${partner.name} logo`} 
-      className="h-12 w-auto grayscale hover:grayscale-0 transition-all duration-300" 
+      className="h-14 w-auto grayscale hover:grayscale-0 transition-all duration-300" 
     />
     <span className="text-sm font-medium text-gray-600">{partner.name}</span>
   </div>
@@ -95,72 +95,42 @@ export default function Partners() {
           </p>
         </motion.div>
         
-        {/* First row marquee - left to right */}
-        <div className="overflow-hidden relative mb-8 py-6">
-          <motion.div 
-            className="flex space-x-16 whitespace-nowrap"
-            animate={{ x: ["-15%", "0%"] }}
-            transition={{ 
-              x: {
-                repeat: Infinity,
-                repeatType: "reverse",
-                duration: 20,
-                ease: "linear",
+        {/* Single row marquee - continuous scrolling */}
+        <div className="overflow-hidden relative py-8">
+          <div className="flex justify-center items-center">
+            <motion.div 
+              className="flex whitespace-nowrap"
+              initial={{ x: "100%" }}
+              animate={{ x: "-100%" }}
+              transition={{ 
+                x: {
+                  repeat: Infinity,
+                  duration: 30,
+                  ease: "linear",
+                },
+                delay: 0
+              }}
+            >
+              {/* Duplicate partners to create continuous scroll effect */}
+              {hasApiPartners ? 
+                [...partners, ...partners].map((partner, index) => (
+                  <div key={index} className="inline-block">
+                    <PartnerLogo partner={partner} />
+                  </div>
+                ))
+                :
+                [...fallbackPartners, ...fallbackPartners].map((partner, index) => (
+                  <div key={index} className="inline-block">
+                    <PartnerLogo partner={partner} />
+                  </div>
+                ))
               }
-            }}
-          >
-            {hasApiPartners ? 
-              partners.slice(0, Math.ceil(partners.length/2)).map((partner, index) => (
-                <div key={index} className="inline-block">
-                  <PartnerLogo partner={partner} />
-                </div>
-              ))
-              :
-              fallbackPartners.slice(0, 8).map((partner, index) => (
-                <div key={index} className="inline-block">
-                  <PartnerLogo partner={partner} />
-                </div>
-              ))
-            }
-          </motion.div>
+            </motion.div>
+          </div>
           
           {/* Gradient overlays for smooth edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-gray-50 to-transparent z-10"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-gray-50 to-transparent z-10"></div>
-        </div>
-        
-        {/* Second row marquee - right to left */}
-        <div className="overflow-hidden relative py-6">
-          <motion.div 
-            className="flex space-x-16 whitespace-nowrap"
-            animate={{ x: ["0%", "-15%"] }}
-            transition={{ 
-              x: {
-                repeat: Infinity,
-                repeatType: "reverse",
-                duration: 25,
-                ease: "linear",
-              }
-            }}
-          >
-            {hasApiPartners ? 
-              partners.slice(Math.ceil(partners.length/2)).map((partner, index) => (
-                <div key={index} className="inline-block">
-                  <PartnerLogo partner={partner} />
-                </div>
-              ))
-              :
-              fallbackPartners.slice(8).map((partner, index) => (
-                <div key={index} className="inline-block">
-                  <PartnerLogo partner={partner} />
-                </div>
-              ))
-            }
-          </motion.div>
-          
-          {/* Gradient overlays for smooth edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-gray-50 to-transparent z-10"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-gray-50 to-transparent z-10"></div>
+          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-gray-50 to-transparent z-10"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-gray-50 to-transparent z-10"></div>
         </div>
       </div>
     </section>
