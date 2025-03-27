@@ -12,8 +12,6 @@ import {
   Shield, 
   Search, 
   FileText, 
-  FolderPlus, 
-  PlusCircle,
   UserCog,
   Lock,
   Unlock,
@@ -23,9 +21,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { User, InsertProject } from "@shared/schema";
+import { User } from "@shared/schema";
 import AdminLayout from "@/components/admin/admin-layout";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
@@ -47,39 +44,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-// Project form schema
-const projectFormSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  startDate: z.string().min(1, "Start date is required"),
-  estimatedEndDate: z.string().min(1, "Estimated end date is required"),
-  serviceType: z.string().min(1, "Service type is required"),
-  status: z.string().default("planning"),
-  completionPercentage: z.number().default(0),
-});
-
-type ProjectFormValues = z.infer<typeof projectFormSchema>;
 
 export default function UsersManagement() {
   const { toast } = useToast();
@@ -88,7 +52,6 @@ export default function UsersManagement() {
   const [confirmingBlockUser, setConfirmingBlockUser] = useState<{user: User | null, block: boolean}>({user: null, block: false});
   const [confirmingPromoteUser, setConfirmingPromoteUser] = useState<User | null>(null);
   const [confirmingDeleteUser, setConfirmingDeleteUser] = useState<User | null>(null);
-  const [addProjectUser, setAddProjectUser] = useState<User | null>(null);
   
   // Fetch all users
   const {
@@ -117,50 +80,6 @@ export default function UsersManagement() {
     onError: (error: Error) => {
       toast({
         title: "Verification failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-  
-  // Create project form setup
-  const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectFormSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      startDate: new Date().toISOString().substring(0, 10),
-      estimatedEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10), // Default to 30 days from now
-      serviceType: "",
-      status: "planning",
-      completionPercentage: 0,
-    }
-  });
-  
-  // Create project mutation
-  const createProjectMutation = useMutation({
-    mutationFn: async ({ userId, project }: { userId: number, project: ProjectFormValues }) => {
-      const formattedProject = {
-        ...project,
-        userId,
-        startDate: new Date(project.startDate).toISOString(),
-        estimatedEndDate: new Date(project.estimatedEndDate).toISOString()
-      };
-      
-      const res = await apiRequest("POST", `/api/admin/users/${userId}/projects`, formattedProject);
-      return await res.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Project created",
-        description: `Project has been created successfully for ${addProjectUser?.username}.`,
-      });
-      form.reset();
-      setAddProjectUser(null);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Failed to create project",
         description: error.message,
         variant: "destructive",
       });
@@ -299,25 +218,6 @@ export default function UsersManagement() {
   const confirmDelete = () => {
     if (confirmingDeleteUser) {
       deleteUserMutation.mutate(confirmingDeleteUser.id);
-    }
-  };
-  
-  const handleAddProjectClick = (user: User) => {
-    setAddProjectUser(user);
-    form.reset({
-      title: "",
-      description: "",
-      startDate: new Date().toISOString().substring(0, 10),
-      estimatedEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
-      serviceType: "",
-      status: "planning",
-      completionPercentage: 0,
-    });
-  };
-  
-  const onProjectSubmit = (data: ProjectFormValues) => {
-    if (addProjectUser) {
-      createProjectMutation.mutate({ userId: addProjectUser.id, project: data });
     }
   };
   
@@ -467,17 +367,6 @@ export default function UsersManagement() {
                               )}
                               
                               {!user.isAdmin && (
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => handleAddProjectClick(user)}
-                                >
-                                  <FolderPlus className="h-3 w-3 mr-2" />
-                                  Add Project
-                                </Button>
-                              )}
-                              
-                              {!user.isAdmin && (
                                 user.isBlocked ? (
                                   <Button 
                                     size="sm" 
@@ -576,159 +465,6 @@ export default function UsersManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      
-      {/* Add Project Dialog */}
-      <Dialog open={!!addProjectUser} onOpenChange={(open) => !open && setAddProjectUser(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
-            <DialogDescription>
-              Add a new project for {addProjectUser?.username}. This will be visible in their dashboard.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onProjectSubmit)} className="space-y-4 mt-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Project Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter project title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter project description" 
-                        className="min-h-[120px]" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="estimatedEndDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Estimated End Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="serviceType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Service Type</FormLabel>
-                      <FormControl>
-                        <select
-                          className="w-full h-10 px-3 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                          {...field}
-                        >
-                          <option value="">Select a service type</option>
-                          <option value="web-development">Web Development</option>
-                          <option value="mobile-development">Mobile Development</option>
-                          <option value="ui-ux-design">UI/UX Design</option>
-                          <option value="cloud-services">Cloud Services</option>
-                          <option value="data-analytics">Data Analytics</option>
-                          <option value="consulting">Consulting</option>
-                          <option value="maintenance">Maintenance</option>
-                          <option value="testing-qa">Testing & QA</option>
-                          <option value="custom">Custom Service</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <FormControl>
-                        <select
-                          className="w-full h-10 px-3 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                          {...field}
-                        >
-                          <option value="planning">Planning</option>
-                          <option value="in-progress">In Progress</option>
-                          <option value="review">Under Review</option>
-                          <option value="completed">Completed</option>
-                          <option value="on-hold">On Hold</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <DialogFooter className="mt-6">
-                <Button type="button" variant="outline" onClick={() => setAddProjectUser(null)}>
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={createProjectMutation.isPending}
-                >
-                  {createProjectMutation.isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Creating Project...
-                    </>
-                  ) : (
-                    <>
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      Create Project
-                    </>
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
       
       {/* Promote to Admin Confirmation Dialog */}
       <AlertDialog open={!!confirmingPromoteUser} onOpenChange={() => setConfirmingPromoteUser(null)}>
