@@ -1072,7 +1072,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin invoice management endpoints
-  app.post("/api/admin/projects/:id/invoices", async (req, res) => {
+  app.post("/api/projects/:id/invoices", async (req, res) => {
     try {
       const projectId = parseInt(req.params.id);
       const project = await storage.getProject(projectId);

@@ -19,12 +19,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AdminLayout from '@/components/admin/admin-layout';
 
 // Extend the invoice schema for the form
-const invoiceFormSchema = insertInvoiceSchema.extend({
+const invoiceFormSchema = z.object({
   projectId: z.string().min(1, "Project is required"),
-}).omit({ 
-  id: true, 
-  createdAt: true,
-  invoiceNumber: true
+  amount: z.string().min(1, "Amount is required").transform(val => parseFloat(val)),
+  currency: z.string().default("USD"),
+  status: z.string().default("pending"),
+  issueDate: z.string().min(1, "Issue date is required"),
+  dueDate: z.string().min(1, "Due date is required"),
+  paymentDate: z.string().optional().nullable(),
+  notes: z.string().optional(),
 });
 
 type InvoiceFormValues = z.infer<typeof invoiceFormSchema>;
@@ -36,7 +39,7 @@ export default function NewInvoicePage() {
   
   // Fetch all projects for the dropdown
   const { data: projects, isLoading: isLoadingProjects } = useQuery<Project[]>({
-    queryKey: ['/api/admin/projects'],
+    queryKey: ['/api/projects'],
     enabled: !!user?.isAdmin
   });
   
@@ -58,7 +61,7 @@ export default function NewInvoicePage() {
   // Create invoice mutation
   const createInvoice = useMutation({
     mutationFn: async (data: InvoiceFormValues) => {
-      const res = await apiRequest('POST', `/api/admin/projects/${data.projectId}/invoices`, {
+      const res = await apiRequest('POST', `/api/projects/${data.projectId}/invoices`, {
         ...data,
         projectId: parseInt(data.projectId),
       });
@@ -69,7 +72,8 @@ export default function NewInvoicePage() {
         title: "Invoice created",
         description: "The invoice has been successfully created.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', data.projectId, 'invoices'] });
       navigate(`/admin/invoices/${data.id}`);
     },
     onError: (error) => {
