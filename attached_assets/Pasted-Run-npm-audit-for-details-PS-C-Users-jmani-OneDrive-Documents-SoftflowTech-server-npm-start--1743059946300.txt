@@ -1,0 +1,94 @@
+Run `npm audit` for details.
+PS C:\Users\jmani\OneDrive\Documents\SoftflowTech\server> npm start
+
+> rest-express@1.0.0 start
+> cross-env NODE_ENV=production node dist/index.js
+
+Checking if database schema needs updates...
+Server listening on port 5000
+Error checking or updating database schema: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://dpg-cvif3jp5pdvs738m5cjg-a/v2',
+    _req: null,
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: Error: getaddrinfo ENOTFOUND dpg-cvif3jp5pdvs738m5cjg-a
+      at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:120:26) {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'dpg-cvif3jp5pdvs738m5cjg-a'
+  },
+  [Symbol(kMessage)]: 'getaddrinfo ENOTFOUND dpg-cvif3jp5pdvs738m5cjg-a'
+}
+Failed to update database schema: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://dpg-cvif3jp5pdvs738m5cjg-a/v2',
+    _req: null,
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: Error: getaddrinfo ENOTFOUND dpg-cvif3jp5pdvs738m5cjg-a
+      at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:120:26) {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'dpg-cvif3jp5pdvs738m5cjg-a'
+  },
+  [Symbol(kMessage)]: 'getaddrinfo ENOTFOUND dpg-cvif3jp5pdvs738m5cjg-a'
+}

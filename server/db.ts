@@ -1,10 +1,8 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
+import pkg from 'pg';
+const { Pool } = pkg;
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { sql } from 'drizzle-orm';
-import ws from "ws";
 import * as schema from "@shared/schema";
-
-neonConfig.webSocketConstructor = ws;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -13,12 +11,24 @@ if (!process.env.DATABASE_URL) {
 }
 
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle(pool, { schema });
 
 // Database migration helper
 export async function checkAndUpdateSchema() {
   try {
     console.log("Checking if database schema needs updates...");
+    
+    // Check if tables exist
+    const checkTableResult = await pool.query(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'users'
+    `);
+
+    if (checkTableResult.rows.length === 0) {
+      console.log("Tables not found. You may need to run migrations.");
+      return;
+    }
     
     // Check if isBlocked column exists in users table
     const checkColumnResult = await pool.query(`
@@ -42,11 +52,14 @@ export async function checkAndUpdateSchema() {
     console.log("Database schema check complete");
   } catch (error) {
     console.error("Error checking or updating database schema:", error);
-    throw error;
+    // Don't throw the error, just log it to allow server to start
+    console.log("Will continue starting the server despite schema check error");
   }
 }
 
 // Run the migration check
 checkAndUpdateSchema().catch(err => {
   console.error("Failed to update database schema:", err);
+  // Don't crash the server if schema update fails
+  console.log("Will continue starting the server despite schema update error");
 });
