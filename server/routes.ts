@@ -409,14 +409,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/services", async (req, res) => {
     try {
       const validatedData = insertServiceSchema.parse(req.body);
+      
+      // Create a slug if one wasn't provided
+      if (!validatedData.slug) {
+        validatedData.slug = validatedData.title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+      }
+      
+      console.log("Creating service with data:", validatedData);
       const service = await storage.createService(validatedData);
       res.status(201).json(service);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid service data", errors: error.errors });
+        return res.status(400).json({ 
+          message: "Invalid service data", 
+          errors: error.errors 
+        });
       }
+      
+      // Handle specific database errors
+      if (error.code === '23505' && error.constraint === 'services_slug_unique') {
+        return res.status(400).json({ 
+          message: "A service with this slug already exists. Please use a different title or slug.",
+          error: error.detail
+        });
+      }
+      
       console.error("Error creating service:", error);
-      res.status(500).json({ message: "Failed to create service" });
+      res.status(500).json({ 
+        message: "Failed to create service", 
+        error: error.message || "Unknown error"
+      });
     }
   });
 
@@ -424,6 +450,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const validatedData = insertServiceSchema.partial().parse(req.body);
+      
+      // Create a slug if one is provided as title but no slug
+      if (validatedData.title && !validatedData.slug) {
+        validatedData.slug = validatedData.title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+      }
+      
+      console.log("Updating service with data:", validatedData);
       const service = await storage.updateService(id, validatedData);
       
       if (!service) {
@@ -433,10 +470,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(service);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid service data", errors: error.errors });
+        return res.status(400).json({ 
+          message: "Invalid service data", 
+          errors: error.errors 
+        });
       }
+      
+      // Handle specific database errors
+      if (error.code === '23505' && error.constraint === 'services_slug_unique') {
+        return res.status(400).json({ 
+          message: "A service with this slug already exists. Please use a different title or slug.",
+          error: error.detail
+        });
+      }
+      
       console.error("Error updating service:", error);
-      res.status(500).json({ message: "Failed to update service" });
+      res.status(500).json({ 
+        message: "Failed to update service", 
+        error: error.message || "Unknown error"
+      });
     }
   });
 

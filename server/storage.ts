@@ -829,11 +829,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createService(service: InsertService): Promise<Service> {
+    // Check if service with the same slug already exists
+    const existingService = await this.getServiceBySlug(service.slug);
+    if (existingService) {
+      // Generate a unique slug by appending a timestamp
+      const timestamp = Date.now().toString().slice(-4);
+      service.slug = `${service.slug}-${timestamp}`;
+      console.log(`Created unique slug: ${service.slug}`);
+    }
+    
+    // Create the service with potentially modified slug
     const [newService] = await db.insert(services).values(service).returning();
     return newService;
   }
 
   async updateService(id: number, service: Partial<InsertService>): Promise<Service | undefined> {
+    // If slug is being updated, check for uniqueness
+    if (service.slug) {
+      // First, get the existing service to compare
+      const existingService = await this.getService(id);
+      if (existingService && existingService.slug !== service.slug) {
+        // Check if another service already uses this slug
+        const slugExists = await this.getServiceBySlug(service.slug);
+        if (slugExists && slugExists.id !== id) {
+          // Generate a unique slug by appending a timestamp
+          const timestamp = Date.now().toString().slice(-4);
+          service.slug = `${service.slug}-${timestamp}`;
+          console.log(`Created unique slug for update: ${service.slug}`);
+        }
+      }
+    }
+    
     const [updatedService] = await db
       .update(services)
       .set(service)
