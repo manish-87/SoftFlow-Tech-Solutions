@@ -575,7 +575,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(project);
     } catch (error) {
-      console.error("Error getting project:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error getting project:", errorMessage);
       res.status(500).json({ message: "Failed to get project" });
     }
   });
@@ -948,7 +949,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const projects = await storage.getAllProjects();
-      res.json(projects);
+      
+      // Make sure all projects have valid properties before sending to client
+      const validProjects = projects.filter(project => 
+        project && typeof project.id === 'number' && project.title
+      );
+      
+      res.json(validProjects);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error("Error getting all projects:", errorMessage);

@@ -150,11 +150,17 @@ export default function NewInvoicePage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {projects?.map((project) => (
-                            <SelectItem key={project.id} value={project.id.toString()}>
-                              {project.title}
-                            </SelectItem>
-                          ))}
+                          {isLoadingProjects ? (
+                            <SelectItem value="loading" disabled>Loading projects...</SelectItem>
+                          ) : projects && projects.length > 0 ? (
+                            projects.map((project) => (
+                              <SelectItem key={project.id} value={project.id.toString()}>
+                                {project.title || `Project #${project.id}`}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="none" disabled>No projects available</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormDescription>
