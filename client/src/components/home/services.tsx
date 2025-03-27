@@ -101,7 +101,7 @@ export default function Services() {
                 variants={item}
               >
                 <Link href={`/services/${service.slug}`}>
-                  <a className="block p-6">
+                  <div className="block p-6 cursor-pointer">
                     <div className="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-blue-100 transition-colors">
                       <ServiceIcon iconName={service.icon} />
                     </div>
@@ -116,7 +116,7 @@ export default function Services() {
                     <div className="text-primary font-medium inline-flex items-center mt-2 group-hover:translate-x-1 transition-transform">
                       Learn more <span className="ml-2">→</span>
                     </div>
-                  </a>
+                  </div>
                 </Link>
               </motion.div>
             ))}
@@ -125,9 +125,9 @@ export default function Services() {
         
         <div className="text-center mt-12">
           <Link href="/services">
-            <a className="inline-flex items-center justify-center bg-primary hover:bg-blue-700 text-white py-3 px-8 rounded-md font-medium transition duration-300 ease-in-out">
+            <div className="inline-flex items-center justify-center bg-primary hover:bg-blue-700 text-white py-3 px-8 rounded-md font-medium transition duration-300 ease-in-out cursor-pointer">
               View All Services
-            </a>
+            </div>
           </Link>
         </div>
       </div>

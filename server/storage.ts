@@ -82,6 +82,9 @@ export interface IStorage {
   // User Applications
   getUserApplications(email: string): Promise<Application[]>;
   
+  // User Messages
+  getMessagesByEmail(email: string): Promise<Message[]>;
+  
   // Session store
   sessionStore: any;
 }
@@ -569,6 +572,13 @@ export class MemStorage implements IStorage {
       .filter(app => app.email === email)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
+  
+  // User Messages methods
+  async getMessagesByEmail(email: string): Promise<Message[]> {
+    return Array.from(this.messagesList.values())
+      .filter(message => message.email === email)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
 }
 
 // Database Storage implementation
@@ -949,6 +959,15 @@ export class DatabaseStorage implements IStorage {
       .from(applications)
       .where(eq(applications.email, email))
       .orderBy(desc(applications.createdAt));
+  }
+  
+  // User Messages methods
+  async getMessagesByEmail(email: string): Promise<Message[]> {
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.email, email))
+      .orderBy(desc(messages.createdAt));
   }
 }
 

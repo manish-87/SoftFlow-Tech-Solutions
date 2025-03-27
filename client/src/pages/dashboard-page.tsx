@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, CheckCircle, Clock, XCircle, BarChart, Activity, Users } from "lucide-react";
+import { Loader2, FileText, CheckCircle, Clock, XCircle, BarChart, Activity, Users, MessageSquare } from "lucide-react";
 import Layout from "@/components/layout/layout";
-import { Application } from "@shared/schema";
+import { Application, Message, Project } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect } from "wouter";
 
@@ -29,29 +29,37 @@ export default function DashboardPage() {
   } = useQuery<Application[]>({
     queryKey: ["/api/user/applications"],
     enabled: !!user, // Only run query if user is logged in
+    queryFn: async () => {
+      const res = await fetch(`/api/user/applications?email=${user?.email}`);
+      if (!res.ok) throw new Error('Failed to fetch applications');
+      return res.json();
+    }
   });
 
-  // Mock projects data (to be replaced with actual API call when backend is ready)
-  const projects = [
-    {
-      id: 1,
-      title: "Website Redesign",
-      status: "in-progress",
-      completionPercentage: 65,
-      startDate: "2023-02-15",
-      estimatedEndDate: "2023-04-30",
-      description: "Complete redesign of corporate website with modern UI/UX",
-    },
-    {
-      id: 2,
-      title: "Mobile App Development",
-      status: "planning",
-      completionPercentage: 15,
-      startDate: "2023-03-10",
-      estimatedEndDate: "2023-06-15",
-      description: "iOS and Android application for customer engagement",
-    },
-  ];
+  // Fetch user's messages
+  const {
+    data: messages,
+    isLoading: messagesLoading,
+    error: messagesError,
+  } = useQuery<Message[]>({
+    queryKey: ["/api/user/messages"],
+    enabled: !!user, // Only run query if user is logged in
+    queryFn: async () => {
+      const res = await fetch(`/api/user/messages?email=${user?.email}`);
+      if (!res.ok) throw new Error('Failed to fetch messages');
+      return res.json();
+    }
+  });
+
+  // Fetch user's projects
+  const {
+    data: projects,
+    isLoading: projectsLoading,
+    error: projectsError,
+  } = useQuery<Project[]>({
+    queryKey: ["/api/projects"],
+    enabled: !!user, // Only run query if user is logged in
+  });
 
   // Show loading state while checking authentication
   if (authLoading) {
@@ -136,9 +144,70 @@ export default function DashboardPage() {
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-8">
+            <TabsTrigger value="messages">My Messages</TabsTrigger>
             <TabsTrigger value="applications">Job Applications</TabsTrigger>
             <TabsTrigger value="projects">My Projects</TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="messages">
+            <div className="grid grid-cols-1 gap-6">
+              <h2 className="text-2xl font-semibold mb-2">My Messages</h2>
+              
+              {messagesLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : messagesError ? (
+                <div className="text-red-500 py-6">
+                  Error loading your messages. Please try again later.
+                </div>
+              ) : messages && messages.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {messages.map((message) => (
+                    <Card key={message.id} className="border border-neutral-200">
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-xl">
+                              {message.service ? `Regarding: ${message.service}` : 'General Inquiry'}
+                            </CardTitle>
+                            <CardDescription className="mt-1">
+                              Sent on {formatDate(message.createdAt.toString())}
+                            </CardDescription>
+                          </div>
+                          <Badge variant={message.read ? "outline" : "default"}>
+                            {message.read ? 'Responded' : 'Pending Response'}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
+                          <MessageSquare className="h-5 w-5 text-primary" />
+                          <span>
+                            {message.read ? 'Your message has been read and responded to.' : 'Your message is being reviewed by our team.'}
+                          </span>
+                        </div>
+                        
+                        <div className="border-t border-neutral-200 mt-4 pt-4">
+                          <h4 className="font-medium mb-2">Message</h4>
+                          <p className="text-sm text-gray-700">{message.message}</p>
+                        </div>
+                        
+                        {message.company && (
+                          <div className="mt-4 text-sm">
+                            <span className="text-muted-foreground">Company: </span>
+                            <span>{message.company}</span>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState message="You haven't sent any messages yet." />
+              )}
+            </div>
+          </TabsContent>
           
           <TabsContent value="applications">
             <div className="grid grid-cols-1 gap-6">
@@ -159,7 +228,9 @@ export default function DashboardPage() {
                       <CardHeader className="pb-3">
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle className="text-xl">{application.position || "Position"}</CardTitle>
+                            <CardTitle className="text-xl">
+                              {application.careerId ? `Job Application #${application.careerId}` : "Job Application"}
+                            </CardTitle>
                             <CardDescription className="mt-1">
                               Applied on {formatDate(application.createdAt.toString())}
                             </CardDescription>

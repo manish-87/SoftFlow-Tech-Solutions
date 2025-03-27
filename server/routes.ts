@@ -686,9 +686,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const applications = await storage.getUserApplications(email);
       res.json(applications);
-    } catch (error) {
-      console.error("Error getting user applications:", error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error getting user applications:", errorMessage);
       res.status(500).json({ message: "Failed to get applications" });
+    }
+  });
+  
+  // Messages tracking endpoint for users
+  app.get("/api/user/messages", async (req, res) => {
+    try {
+      // Check if email query parameter is provided
+      const email = req.query.email as string;
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // Get messages sent by user
+      const messages = await storage.getMessagesByEmail(email);
+      res.json(messages);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error getting user messages:", errorMessage);
+      res.status(500).json({ message: "Failed to get messages" });
     }
   });
 
