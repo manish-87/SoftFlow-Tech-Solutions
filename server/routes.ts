@@ -983,6 +983,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get projects" });
     }
   });
+  
+  // Endpoint to get projects by user ID (for invoice creation)
+  app.get("/api/users/:userId/projects", async (req, res) => {
+    try {
+      // Ensure user is authenticated and is an admin or the user themselves
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = parseInt(req.params.userId);
+      
+      // Verify userId is a valid number
+      if (isNaN(userId) || userId <= 0) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Only allow admins or the user themselves to access their projects
+      if (!req.user.isAdmin && req.user.id !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const projects = await storage.getProjects(userId);
+      
+      // Filter out any invalid projects
+      const validProjects = projects.filter(project => {
+        return (
+          project && 
+          typeof project === 'object' &&
+          project.id !== undefined && 
+          !isNaN(Number(project.id)) &&
+          (
+            (typeof project.title === 'string' && project.title.trim().length > 0) ||
+            (typeof project.name === 'string' && project.name.trim().length > 0)
+          )
+        );
+      });
+      
+      res.json(validProjects);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Error getting projects for user ${req.params.userId}:`, errorMessage);
+      res.status(500).json({ message: "Failed to get projects" });
+    }
+  });
 
   // API endpoint for creating projects for a specific user
   app.post("/api/admin/users/:id/projects", async (req, res) => {
@@ -1270,6 +1314,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertPaymentSchema.parse(paymentData);
       const payment = await storage.createPayment(validatedData);
       
+      // After adding payment, check if invoice is fully paid or partially paid
+      try {
+        // Get all payments for this invoice
+        const payments = await storage.getInvoicePayments(invoiceId);
+        
+        if (payments && payments.length > 0) {
+          // Calculate total amount paid
+          const totalPaid = payments.reduce((sum, payment) => {
+            return sum + parseFloat(payment.amount);
+          }, 0);
+          
+          // Compare with invoice amount
+          const invoiceAmount = parseFloat(invoice.amount);
+          
+          if (totalPaid >= invoiceAmount) {
+            // Mark as fully paid
+            await storage.updateInvoiceStatus(invoiceId, "paid");
+          } else if (totalPaid > 0) {
+            // Mark as partially paid
+            await storage.updateInvoiceStatus(invoiceId, "partially_paid");
+          }
+        }
+      } catch (updateError) {
+        console.error("Error updating invoice status after payment:", updateError);
+        // Continue with the response even if status update fails
+      }
+      
       res.status(201).json(payment);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1296,7 +1367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const { status } = req.body;
       
-      if (!status || !["pending", "paid", "unpaid", "overdue", "cancelled"].includes(status)) {
+      if (!status || !["pending", "paid", "partially_paid", "unpaid", "overdue", "cancelled"].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }
       
@@ -1410,10 +1481,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const id = parseInt(req.params.id);
+      
+      // Get the payment first to know which invoice it belongs to
+      const payment = await storage.getPayment(id);
+      
+      if (!payment) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      
+      // Store the invoiceId before deleting the payment
+      const invoiceId = payment.invoiceId;
+      
+      // Delete the payment
       const success = await storage.deletePayment(id);
       
       if (!success) {
-        return res.status(404).json({ message: "Payment not found" });
+        return res.status(404).json({ message: "Failed to delete payment" });
+      }
+      
+      // After deleting payment, recalculate invoice status
+      try {
+        const invoice = await storage.getInvoice(invoiceId);
+        if (invoice) {
+          // Get remaining payments for this invoice
+          const payments = await storage.getInvoicePayments(invoiceId);
+          
+          if (!payments || payments.length === 0) {
+            // No payments left, revert to unpaid or pending status
+            await storage.updateInvoiceStatus(invoiceId, "unpaid");
+          } else {
+            // Calculate total amount paid
+            const totalPaid = payments.reduce((sum, payment) => {
+              return sum + parseFloat(payment.amount);
+            }, 0);
+            
+            // Compare with invoice amount
+            const invoiceAmount = parseFloat(invoice.amount);
+            
+            if (totalPaid >= invoiceAmount) {
+              // Still fully paid
+              await storage.updateInvoiceStatus(invoiceId, "paid");
+            } else if (totalPaid > 0) {
+              // Now partially paid
+              await storage.updateInvoiceStatus(invoiceId, "partially_paid");
+            } else {
+              // No valid payments, revert to unpaid
+              await storage.updateInvoiceStatus(invoiceId, "unpaid");
+            }
+          }
+        }
+      } catch (updateError) {
+        console.error("Error updating invoice status after payment deletion:", updateError);
+        // Continue with the response even if status update fails
       }
       
       res.status(204).end();

@@ -109,6 +109,7 @@ export interface IStorage {
   
   // Payments
   getInvoicePayments(invoiceId: number): Promise<Payment[]>;
+  getPayment(id: number): Promise<Payment | undefined>;
   createPayment(payment: InsertPayment): Promise<Payment>;
   deletePayment(id: number): Promise<boolean>;
   
@@ -811,6 +812,10 @@ export class MemStorage implements IStorage {
       .filter(payment => payment.invoiceId === invoiceId)
       .sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
   }
+  
+  async getPayment(id: number): Promise<Payment | undefined> {
+    return this.paymentsList.get(id);
+  }
 
   async createPayment(payment: InsertPayment): Promise<Payment> {
     const id = this.currentPaymentId++;
@@ -1432,6 +1437,14 @@ export class DatabaseStorage implements IStorage {
       .from(payments)
       .where(eq(payments.invoiceId, invoiceId))
       .orderBy(desc(payments.paymentDate));
+  }
+
+  async getPayment(id: number): Promise<Payment | undefined> {
+    const [payment] = await db
+      .select()
+      .from(payments)
+      .where(eq(payments.id, id));
+    return payment;
   }
 
   async createPayment(payment: InsertPayment): Promise<Payment> {

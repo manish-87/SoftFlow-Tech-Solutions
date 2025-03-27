@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
-import { Project, insertInvoiceSchema, Invoice } from '@shared/schema';
+import { Project, insertInvoiceSchema, Invoice, User } from '@shared/schema';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, RefreshCw } from 'lucide-react';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,6 +20,7 @@ import AdminLayout from '@/components/admin/admin-layout';
 
 // Extend the invoice schema for the form
 const invoiceFormSchema = z.object({
+  userId: z.string().min(1, "Client is required"),
   projectId: z.string().min(1, "Project is required"),
   amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
   currency: z.string().default("USD"),
@@ -27,6 +28,7 @@ const invoiceFormSchema = z.object({
   issueDate: z.string().min(1, "Issue date is required"),
   dueDate: z.string().min(1, "Due date is required"),
   paymentDate: z.string().optional().nullable(),
+  paymentReference: z.string().optional().nullable(),
   notes: z.string().optional(),
 });
 
@@ -37,29 +39,56 @@ export default function NewInvoicePage() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [showPaymentDate, setShowPaymentDate] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   
-  // Fetch all projects for the dropdown
-  const { data: projects, isLoading: isLoadingProjects, error: projectsError } = useQuery<Project[]>({
-    queryKey: ['/api/projects/all'],
+  // Fetch all users for the client dropdown
+  const { data: users, isLoading: isLoadingUsers, error: usersError } = useQuery<User[]>({
+    queryKey: ['/api/admin/users'],
     enabled: !!user?.isAdmin,
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+  
+  // Fetch projects for the selected user
+  const { data: userProjects, isLoading: isLoadingUserProjects, error: userProjectsError } = useQuery<Project[]>({
+    queryKey: ['/api/users', selectedUserId, 'projects'],
+    enabled: !!selectedUserId && !!user?.isAdmin,
+    retry: 2,
+    staleTime: 1 * 60 * 1000, // 1 minute
   });
   
   // Set up form with default values
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
     defaultValues: {
+      userId: '',
       projectId: '',
       amount: 0,
       currency: 'USD',
       issueDate: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
       status: 'pending',
+      paymentReference: '',
       notes: '',
       paymentDate: null,
     }
   });
+  
+  // Update selected user ID when form value changes
+  useEffect(() => {
+    const subscription = form.watch((values, { name }) => {
+      if (name === 'userId' && values.userId !== selectedUserId) {
+        // Fix type error by checking if userId is defined
+        if (values.userId) {
+          setSelectedUserId(values.userId);
+          // Reset project selection when user changes
+          form.setValue('projectId', '');
+        }
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, selectedUserId]);
   
   // Create invoice mutation
   const createInvoice = useMutation({
@@ -93,20 +122,23 @@ export default function NewInvoicePage() {
     const subscription = form.watch((values, { name }) => {
       if (name === 'status') {
         const status = form.getValues('status');
-        setShowPaymentDate(status === 'paid');
+        const needsPaymentInfo = status === 'paid' || status === 'partially_paid';
+        setShowPaymentDate(needsPaymentInfo);
         
-        // Reset payment date when status is not 'paid'
-        if (status !== 'paid') {
+        // Reset payment date and reference when status doesn't need payment info
+        if (!needsPaymentInfo) {
           form.setValue('paymentDate', null);
+          form.setValue('paymentReference', null);
         } else if (!form.getValues('paymentDate')) {
-          // Set default payment date to today when status becomes 'paid'
+          // Set default payment date to today when status requires payment info
           form.setValue('paymentDate', new Date().toISOString().split('T')[0]);
         }
       }
     });
     
     // Initialize payment date visibility based on current status
-    setShowPaymentDate(form.getValues('status') === 'paid');
+    const currentStatus = form.getValues('status');
+    setShowPaymentDate(currentStatus === 'paid' || currentStatus === 'partially_paid');
     
     return () => subscription.unsubscribe();
   }, [form]);
@@ -126,11 +158,20 @@ export default function NewInvoicePage() {
         </div>
       </div>
       
-      {projectsError && (
+      {usersError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTitle>Error loading clients</AlertTitle>
+          <AlertDescription>
+            We couldn't load the clients list. Please try refreshing the page.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {userProjectsError && selectedUserId && (
         <Alert variant="destructive" className="mb-6">
           <AlertTitle>Error loading projects</AlertTitle>
           <AlertDescription>
-            We couldn't load the projects list. Please try refreshing the page.
+            We couldn't load the projects for this client. Please try selecting a different client or refresh the page.
           </AlertDescription>
         </Alert>
       )}
@@ -144,6 +185,49 @@ export default function NewInvoicePage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Client Selection First */}
+                <FormField
+                  control={form.control}
+                  name="userId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Client</FormLabel>
+                      <Select
+                        disabled={isLoadingUsers || createInvoice.isPending}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setSelectedUserId(value);
+                        }}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a client" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {isLoadingUsers ? (
+                            <SelectItem value="loading" disabled>Loading clients...</SelectItem>
+                          ) : users && Array.isArray(users) && users.length > 0 ? (
+                            users.map((user: User) => (
+                              <SelectItem key={user.id} value={user.id.toString()}>
+                                {user.username} {user.isAdmin ? '(Admin)' : ''}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="none" disabled>No clients available</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Select the client for this invoice
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Project Selection (dependent on client) */}
                 <FormField
                   control={form.control}
                   name="projectId"
@@ -151,27 +235,34 @@ export default function NewInvoicePage() {
                     <FormItem>
                       <FormLabel>Project</FormLabel>
                       <Select
-                        disabled={isLoadingProjects || createInvoice.isPending}
+                        disabled={!selectedUserId || isLoadingUserProjects || createInvoice.isPending}
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a project" />
+                            <SelectValue placeholder={!selectedUserId ? "Select a client first" : "Select a project"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {isLoadingProjects ? (
-                            <SelectItem value="loading" disabled>Loading projects...</SelectItem>
-                          ) : projects && Array.isArray(projects) && projects.length > 0 ? (
-                            projects.map((project: Project) => (
+                          {!selectedUserId ? (
+                            <SelectItem value="noclient" disabled>Please select a client first</SelectItem>
+                          ) : isLoadingUserProjects ? (
+                            <SelectItem value="loading" disabled>
+                              <div className="flex items-center gap-2">
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                                <span>Loading projects...</span>
+                              </div>
+                            </SelectItem>
+                          ) : userProjects && Array.isArray(userProjects) && userProjects.length > 0 ? (
+                            userProjects.map((project: Project) => (
                               <SelectItem key={project.id} value={project.id.toString()}>
                                 {/* Handle both title and name fields for consistency between project creation forms */}
                                 {project.title || project.name || `Project #${project.id}`}
                               </SelectItem>
                             ))
                           ) : (
-                            <SelectItem value="none" disabled>No projects available</SelectItem>
+                            <SelectItem value="none" disabled>No projects available for this client</SelectItem>
                           )}
                         </SelectContent>
                       </Select>
@@ -202,6 +293,7 @@ export default function NewInvoicePage() {
                         <SelectContent>
                           <SelectItem value="pending">Pending</SelectItem>
                           <SelectItem value="unpaid">Unpaid</SelectItem>
+                          <SelectItem value="partially_paid">Partially Paid</SelectItem>
                           <SelectItem value="paid">Paid</SelectItem>
                           <SelectItem value="overdue">Overdue</SelectItem>
                           <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -316,29 +408,55 @@ export default function NewInvoicePage() {
                   )}
                 />
                 
-                {showPaymentDate && (
-                  <FormField
-                    control={form.control}
-                    name="paymentDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Payment Date</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            {...field}
-                            value={field.value || ''}
-                            onChange={e => field.onChange(e.target.value || null)}
-                            disabled={createInvoice.isPending}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Date when payment was received
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                {/* Show Payment Date and Reference fields when status is 'paid' or 'partially_paid' */}
+                {(form.getValues('status') === 'paid' || form.getValues('status') === 'partially_paid') && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="paymentDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Payment Date</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              {...field}
+                              value={field.value || ''}
+                              onChange={e => field.onChange(e.target.value || null)}
+                              disabled={createInvoice.isPending}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Date when payment was received
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="paymentReference"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Payment Reference</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Transaction ID, check number, etc."
+                              {...field}
+                              value={field.value || ''}
+                              onChange={e => field.onChange(e.target.value || null)}
+                              disabled={createInvoice.isPending}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Reference number for the payment
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
                 )}
               </div>
               
