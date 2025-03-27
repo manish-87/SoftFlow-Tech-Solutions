@@ -39,7 +39,7 @@ export default function BlogPage() {
     <Layout>
       <div className="pt-20">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-blue-50 via-blue-50 to-white py-20">
+        <section className="bg-gradient-to-br from-sky-50 via-sky-50 to-white py-20">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="max-w-3xl mx-auto text-center"
@@ -78,7 +78,7 @@ export default function BlogPage() {
                   <button
                     className={`px-4 py-2 rounded-full text-sm ${
                       selectedCategory === null
-                        ? "bg-primary text-white"
+                        ? "bg-sky-500 text-white"
                         : "bg-gray-100 hover:bg-gray-200"
                     }`}
                     onClick={() => setSelectedCategory(null)}
@@ -90,7 +90,7 @@ export default function BlogPage() {
                       key={category}
                       className={`px-4 py-2 rounded-full text-sm ${
                         selectedCategory === category
-                          ? "bg-primary text-white"
+                          ? "bg-sky-500 text-white"
                           : "bg-gray-100 hover:bg-gray-200"
                       }`}
                       onClick={() => setSelectedCategory(category)}
@@ -146,7 +146,7 @@ export default function BlogPage() {
                         )}
                         <div className="p-6">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-xs font-medium text-blue-500 uppercase tracking-wider">
+                            <span className="text-xs font-medium text-sky-500 uppercase tracking-wider">
                               {blog.category}
                             </span>
                             <span className="text-xs text-gray-500">
@@ -162,7 +162,7 @@ export default function BlogPage() {
                             {blog.summary}
                           </p>
                           <Link href={`/blog/${blog.slug}`}>
-                            <a className="text-primary font-medium hover:text-primary/80 inline-flex items-center">
+                            <a className="text-sky-500 font-medium hover:text-sky-600 inline-flex items-center">
                               Read more <span className="ml-2">→</span>
                             </a>
                           </Link>

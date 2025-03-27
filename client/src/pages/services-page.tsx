@@ -32,7 +32,7 @@ export default function ServicesPage() {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 via-blue-50 to-white py-20">
+      <section className="bg-gradient-to-br from-sky-50 via-sky-50 to-white py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -63,7 +63,7 @@ export default function ServicesPage() {
               >
                 <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-lg">
                   <CardHeader>
-                    <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <div className="h-12 w-12 bg-sky-50 rounded-lg flex items-center justify-center mb-4">
                       <span className="text-primary text-2xl">
                         {getServiceIcon(service.icon)}
                       </span>
@@ -76,7 +76,7 @@ export default function ServicesPage() {
                   <CardFooter>
                     <Button 
                       onClick={() => handleServiceContactClick(service.slug)}
-                      className="w-full"
+                      className="w-full bg-sky-500 hover:bg-sky-600 text-white"
                     >
                       Get a Quote <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
@@ -89,7 +89,7 @@ export default function ServicesPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-br from-blue-100 via-blue-50 to-white py-20">
+      <section className="bg-gradient-to-br from-sky-50 via-sky-50 to-white py-20">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -105,6 +105,7 @@ export default function ServicesPage() {
               onClick={() => setLocation('/contact')}
               variant="default" 
               size="lg"
+              className="bg-sky-500 hover:bg-sky-600 text-white"
             >
               Contact Us
             </Button>

@@ -138,7 +138,7 @@ export default function CareersPage() {
     <Layout>
       <div className="pt-20">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-blue-50 via-blue-50 to-white py-20">
+        <section className="bg-gradient-to-br from-sky-50 via-sky-50 to-white py-20">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="max-w-3xl mx-auto text-center"
@@ -251,7 +251,7 @@ export default function CareersPage() {
                             key={department}
                             className={`block w-full text-left px-3 py-2 rounded-md text-sm ${
                               selectedDepartment === department
-                                ? "bg-primary/10 text-primary"
+                                ? "bg-sky-100 text-sky-600"
                                 : "hover:bg-neutral-100"
                             }`}
                             onClick={() =>
@@ -277,7 +277,7 @@ export default function CareersPage() {
                             key={location}
                             className={`block w-full text-left px-3 py-2 rounded-md text-sm ${
                               selectedLocation === location
-                                ? "bg-primary/10 text-primary"
+                                ? "bg-sky-100 text-sky-600"
                                 : "hover:bg-neutral-100"
                             }`}
                             onClick={() =>
@@ -301,7 +301,7 @@ export default function CareersPage() {
                             key={type}
                             className={`block w-full text-left px-3 py-2 rounded-md text-sm ${
                               selectedType === type
-                                ? "bg-primary/10 text-primary"
+                                ? "bg-sky-100 text-sky-600"
                                 : "hover:bg-neutral-100"
                             }`}
                             onClick={() =>
@@ -401,7 +401,7 @@ export default function CareersPage() {
                               <DialogTrigger asChild>
                                 <Button
                                   onClick={() => setSelectedJobId(job.id)}
-                                  className="bg-primary hover:bg-primary/90"
+                                  className="bg-sky-500 hover:bg-sky-600 text-white"
                                 >
                                   Apply Now
                                 </Button>
@@ -515,7 +515,7 @@ export default function CareersPage() {
 
                                     <Button
                                       type="submit"
-                                      className="w-full"
+                                      className="w-full bg-sky-500 hover:bg-sky-600 text-white"
                                       disabled={applicationMutation.isPending}
                                     >
                                       {applicationMutation.isPending

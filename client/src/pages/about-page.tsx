@@ -7,7 +7,7 @@ export default function AboutPage() {
     <Layout>
       <div className="pt-20">
         {/* Hero */}
-        <section className="bg-gradient-to-br from-blue-50 via-blue-50 to-white py-20">
+        <section className="bg-gradient-to-br from-sky-50 via-sky-50 to-white py-20">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="max-w-3xl mx-auto text-center"
@@ -84,8 +84,8 @@ export default function AboutPage() {
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
                 <div className="flex items-center mb-4">
-                  <div className="bg-blue-100 p-3 rounded-full mr-4">
-                    <Target className="h-6 w-6 text-blue-600" />
+                  <div className="bg-sky-100 p-3 rounded-full mr-4">
+                    <Target className="h-6 w-6 text-sky-500" />
                   </div>
                   <h3 className="text-xl font-bold font-sans">Our Mission</h3>
                 </div>
@@ -102,8 +102,8 @@ export default function AboutPage() {
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
                 <div className="flex items-center mb-4">
-                  <div className="bg-blue-100 p-3 rounded-full mr-4">
-                    <Lightbulb className="h-6 w-6 text-blue-600" />
+                  <div className="bg-sky-100 p-3 rounded-full mr-4">
+                    <Lightbulb className="h-6 w-6 text-sky-500" />
                   </div>
                   <h3 className="text-xl font-bold font-sans">Our Vision</h3>
                 </div>
@@ -136,32 +136,32 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
                 {
-                  icon: <Award className="h-6 w-6 text-blue-600" />,
+                  icon: <Award className="h-6 w-6 text-sky-500" />,
                   title: "Excellence",
                   description: "We are committed to delivering the highest quality in everything we do, from code to customer service."
                 },
                 {
-                  icon: <Users className="h-6 w-6 text-blue-600" />,
+                  icon: <Users className="h-6 w-6 text-sky-500" />,
                   title: "Collaboration",
                   description: "We believe in the power of teamwork, both within our organization and with our clients."
                 },
                 {
-                  icon: <Lightbulb className="h-6 w-6 text-blue-600" />,
+                  icon: <Lightbulb className="h-6 w-6 text-sky-500" />,
                   title: "Innovation",
                   description: "We continuously explore new technologies and approaches to solve complex business challenges."
                 },
                 {
-                  icon: <Target className="h-6 w-6 text-blue-600" />,
+                  icon: <Target className="h-6 w-6 text-sky-500" />,
                   title: "Client Focus",
                   description: "Our clients' success is our success. We prioritize understanding their needs and exceeding expectations."
                 },
                 {
-                  icon: <Check className="h-6 w-6 text-blue-600" />,
+                  icon: <Check className="h-6 w-6 text-sky-500" />,
                   title: "Integrity",
                   description: "We uphold the highest ethical standards in all our interactions and business practices."
                 },
                 {
-                  icon: <Award className="h-6 w-6 text-blue-600" />,
+                  icon: <Award className="h-6 w-6 text-sky-500" />,
                   title: "Continuous Improvement",
                   description: "We are committed to ongoing learning and growth, both as individuals and as an organization."
                 }
@@ -174,7 +174,7 @@ export default function AboutPage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div className="bg-blue-100 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                  <div className="bg-sky-100 p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4">
                     {value.icon}
                   </div>
                   <h3 className="text-lg font-bold mb-2 font-sans">{value.title}</h3>
