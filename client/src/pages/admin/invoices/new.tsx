@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { Project, insertInvoiceSchema, Invoice } from '@shared/schema';
@@ -21,7 +21,7 @@ import AdminLayout from '@/components/admin/admin-layout';
 // Extend the invoice schema for the form
 const invoiceFormSchema = z.object({
   projectId: z.string().min(1, "Project is required"),
-  amount: z.string().min(1, "Amount is required").transform(val => parseFloat(val)),
+  amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
   currency: z.string().default("USD"),
   status: z.string().default("pending"),
   issueDate: z.string().min(1, "Issue date is required"),
@@ -36,6 +36,7 @@ export default function NewInvoicePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const [showPaymentDate, setShowPaymentDate] = useState(false);
   
   // Fetch all projects for the dropdown
   const { data: projects, isLoading: isLoadingProjects } = useQuery<Project[]>({
@@ -48,7 +49,7 @@ export default function NewInvoicePage() {
     resolver: zodResolver(invoiceFormSchema),
     defaultValues: {
       projectId: '',
-      amount: '',
+      amount: 0,
       currency: 'USD',
       issueDate: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
@@ -85,6 +86,29 @@ export default function NewInvoicePage() {
     }
   });
   
+  // Update state when status changes 
+  useEffect(() => {
+    const subscription = form.watch((values, { name }) => {
+      if (name === 'status') {
+        const status = form.getValues('status');
+        setShowPaymentDate(status === 'paid');
+        
+        // Reset payment date when status is not 'paid'
+        if (status !== 'paid') {
+          form.setValue('paymentDate', null);
+        } else if (!form.getValues('paymentDate')) {
+          // Set default payment date to today when status becomes 'paid'
+          form.setValue('paymentDate', new Date().toISOString().split('T')[0]);
+        }
+      }
+    });
+    
+    // Initialize payment date visibility based on current status
+    setShowPaymentDate(form.getValues('status') === 'paid');
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   const onSubmit = (data: InvoiceFormValues) => {
     createInvoice.mutate(data);
   };
@@ -176,15 +200,18 @@ export default function NewInvoicePage() {
                 <FormField
                   control={form.control}
                   name="amount"
-                  render={({ field }) => (
+                  render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
                       <FormLabel>Amount</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="1000.00"
-                          type="text"
+                          type="number"
                           inputMode="decimal"
-                          {...field}
+                          step="0.01"
+                          value={value}
+                          onChange={(e) => onChange(e.target.valueAsNumber || 0)}
+                          {...fieldProps}
                           disabled={createInvoice.isPending}
                         />
                       </FormControl>
@@ -271,7 +298,7 @@ export default function NewInvoicePage() {
                   )}
                 />
                 
-                {form.watch('status') === 'paid' && (
+                {showPaymentDate && (
                   <FormField
                     control={form.control}
                     name="paymentDate"
