@@ -12,14 +12,19 @@ A professional corporate website for SoftFlow that provides comprehensive servic
 - Career portal with application submission functionality
 - Blog system for publishing articles
 - Contact form for user inquiries
+- Comprehensive finance and billing system with invoices and payments
+- Project management with status tracking
+- Multiple payment status indicators (paid/unpaid/pending/partially paid)
+- Stripe integration for payment processing
 
 ## Tech Stack
 
-- **Frontend**: React, Tailwind CSS, Shadcn UI Components
+- **Frontend**: React, Tailwind CSS, Shadcn UI Components, Framer Motion
 - **Backend**: Express.js, Node.js
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Passport.js with custom verification
 - **State Management**: React Query
+- **Payment Processing**: Stripe
 
 ## Getting Started
 
@@ -29,9 +34,9 @@ A professional corporate website for SoftFlow that provides comprehensive servic
 - npm or yarn
 - PostgreSQL database
 
-### Installation
+### Local Installation and Setup
 
-1. Clone the repository
+1. Clone the repository or [download the ZIP file](https://github.com/manish-87/Soft-Flow-Tecnologies/archive/refs/heads/main.zip)
    ```bash
    git clone https://github.com/manish-87/Soft-Flow-Tecnologies.git
    cd Soft-Flow-Tecnologies
@@ -42,17 +47,51 @@ A professional corporate website for SoftFlow that provides comprehensive servic
    npm install
    ```
 
-3. Set up environment variables
-   Create a `.env` file with the following variables:
-   ```
-   DATABASE_URL=postgresql://username:password@localhost:5432/database
-   SESSION_SECRET=your_secret_key
+3. Set up the PostgreSQL database
+   ```bash
+   # Connect to PostgreSQL
+   psql -U postgres
+   
+   # Create the database
+   CREATE DATABASE softflowtech;
+   
+   # Exit PostgreSQL
+   \q
    ```
 
-4. Start the development server
+4. Set up environment variables
+   Edit the `.env` file in the root directory:
+   ```
+   # Uncomment and modify this line with your database credentials
+   DATABASE_URL=postgresql://postgres:your_password@localhost:5432/softflowtech
+   
+   # Session secret for authentication (already set)
+   SESSION_SECRET=H9L5x7ZdRfqTvJmP3bKwG2cE8nYsVu6X
+   
+   # If using Stripe payments, add these (optional)
+   # STRIPE_SECRET_KEY=your_stripe_secret_key
+   # VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key
+   ```
+
+5. Initialize the database schema
+   ```bash
+   npm run db:push
+   ```
+
+6. Start the development server
    ```bash
    npm run dev
    ```
+
+7. Access the application at http://localhost:5000
+
+### Default Admin Credentials
+
+The system comes with a pre-configured admin account:
+- Username: admin
+- Password: JMk@475869
+
+You can use these credentials to access the admin dashboard and manage the system.
 
 ## Deployment to Render
 
@@ -86,10 +125,53 @@ This project includes a `render.yaml` configuration file for easy deployment to 
 
 3. After deployment, run database migrations by clicking "Manual Deploy" → "Clear build cache & deploy"
 
-## Default Admin Credentials
+## Troubleshooting
 
-- Username: admin
-- Password: JMk@475869
+### Database Connection Issues
+
+If you encounter database connection issues:
+
+1. Make sure PostgreSQL is running on your machine
+2. Verify that the database name and credentials in your `.env` file are correct
+3. Ensure that the PostgreSQL port is correct (default is 5432)
+4. Check if the database has been created:
+   ```bash
+   psql -U postgres -c "SELECT datname FROM pg_database WHERE datname='softflowtech';"
+   ```
+
+### Running Database Migrations
+
+If your database tables are not created properly:
+
+1. Make sure your `.env` file contains the correct `DATABASE_URL`
+2. Run the database push command:
+   ```bash
+   npm run db:push
+   ```
+3. Check the console for any errors during migration
+
+### Port Conflicts
+
+If you encounter a port conflict (default is 5000):
+
+1. You can modify the port in `server/index.ts`:
+   ```javascript
+   const port = process.env.PORT || 3000; // Change to another port
+   ```
+2. Restart the server after changing the port
+
+### Understanding the Code Structure
+
+- **client/src/**: Frontend React application
+- **server/**: Backend Express.js API
+- **shared/**: Shared code including database schema
+- **client/src/components/**: Reusable UI components
+- **client/src/pages/**: Page components for each route
+- **client/src/hooks/**: Custom React hooks
+- **client/src/lib/**: Utility functions and API clients
+- **server/routes.ts**: API endpoint definitions
+- **server/storage.ts**: Database operations
+- **shared/schema.ts**: Database schema definitions
 
 ## Contributing
 
