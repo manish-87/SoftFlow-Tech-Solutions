@@ -43,15 +43,15 @@ export default function NewInvoicePage() {
   
   // Fetch all users for the client dropdown
   const { data: users, isLoading: isLoadingUsers, error: usersError } = useQuery<User[]>({
-    queryKey: ['/api/admin/users'],
+    queryKey: ['/api/users'],
     enabled: !!user?.isAdmin,
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
-  // Fetch projects for the selected user
+  // Fetch projects for the selected user - must match the API endpoint URL format
   const { data: userProjects, isLoading: isLoadingUserProjects, error: userProjectsError } = useQuery<Project[]>({
-    queryKey: ['/api/users', selectedUserId, 'projects'],
+    queryKey: [`/api/users/${selectedUserId}/projects`],
     enabled: !!selectedUserId && !!user?.isAdmin,
     retry: 2,
     staleTime: 1 * 60 * 1000, // 1 minute

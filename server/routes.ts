@@ -984,6 +984,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Endpoint to get all users (for admin features like invoice creation)
+  app.get("/api/users", async (req, res) => {
+    try {
+      // Ensure user is authenticated and is an admin
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error getting all users:', errorMessage);
+      res.status(500).json({ message: "Failed to get users" });
+    }
+  });
+  
   // Endpoint to get projects by user ID (for invoice creation)
   app.get("/api/users/:userId/projects", async (req, res) => {
     try {
