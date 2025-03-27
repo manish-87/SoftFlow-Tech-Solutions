@@ -62,6 +62,16 @@ export default function Header() {
                     </Link>
                   ))}
                   
+                  {user && !user.isAdmin && (
+                    <Link 
+                      href="/dashboard"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-lg text-gray-700 hover:text-primary"
+                    >
+                      Dashboard
+                    </Link>
+                  )}
+
                   {user?.isAdmin && (
                     <Link 
                       href="/admin"
@@ -101,6 +111,15 @@ export default function Header() {
               </Link>
             ))}
             
+            {user && !user.isAdmin && (
+              <Link 
+                href="/dashboard"
+                className="font-medium text-neutral-700 hover:text-primary py-1"
+              >
+                Dashboard
+              </Link>
+            )}
+
             {user?.isAdmin && (
               <Link 
                 href="/admin"
