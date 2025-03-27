@@ -32,7 +32,7 @@ export default function ServicesPage() {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="bg-primary/5 py-20">
+      <section className="bg-gradient-to-br from-blue-50 via-blue-50 to-white py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -40,8 +40,8 @@ export default function ServicesPage() {
             transition={{ duration: 0.5 }}
             className="text-center max-w-3xl mx-auto"
           >
-            <h1 className="text-4xl font-bold mb-6">Our Services</h1>
-            <p className="text-lg text-gray-600 mb-8">
+            <h1 className="text-4xl font-bold mb-6 text-neutral-800">Our Services</h1>
+            <p className="text-lg text-neutral-700 mb-8">
               We offer a comprehensive range of technology solutions tailored to meet your business needs.
               From front-end development to cloud management, our team of experts is ready to
               help you achieve your digital transformation goals.
@@ -89,7 +89,7 @@ export default function ServicesPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-primary text-white py-20">
+      <section className="bg-gradient-to-br from-blue-100 via-blue-50 to-white py-20">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -97,13 +97,13 @@ export default function ServicesPage() {
             transition={{ duration: 0.5 }}
             className="max-w-3xl mx-auto"
           >
-            <h2 className="text-3xl font-bold mb-6">Ready to transform your business?</h2>
-            <p className="mb-8 text-white/80">
+            <h2 className="text-3xl font-bold mb-6 text-neutral-800">Ready to transform your business?</h2>
+            <p className="mb-8 text-neutral-700">
               Contact our team today to discuss how our services can help you achieve your goals.
             </p>
             <Button 
               onClick={() => setLocation('/contact')}
-              variant="secondary" 
+              variant="default" 
               size="lg"
             >
               Contact Us

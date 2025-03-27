@@ -138,7 +138,7 @@ export default function CareersPage() {
     <Layout>
       <div className="pt-20">
         {/* Hero Section */}
-        <section className="bg-primary text-white py-20">
+        <section className="bg-gradient-to-br from-blue-50 via-blue-50 to-white py-20">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="max-w-3xl mx-auto text-center"
@@ -146,10 +146,10 @@ export default function CareersPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sans">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sans text-neutral-800">
                 Join Our Team
               </h1>
-              <p className="text-lg opacity-90">
+              <p className="text-lg text-neutral-700">
                 Discover exciting career opportunities and grow with us
               </p>
             </motion.div>
