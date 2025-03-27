@@ -115,23 +115,34 @@ export default function Services() {
   };
   
   return (
-    <section id="services" className="py-16 md:py-24 bg-gray-50">
-      <div className="container mx-auto px-4 md:px-6">
+    <section id="services" className="py-16 md:py-28 bg-gradient-to-b from-white to-gray-50 relative">
+      {/* Decorative backgrounds */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-30">
+        <div className="absolute top-40 right-[10%] w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-[5%] w-80 h-80 bg-blue-400/5 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
         >
-          <div className="inline-block bg-blue-100 text-primary px-4 py-1 rounded-full text-sm font-semibold mb-2">
-            OUR CAPABILITIES
+          <div className="inline-flex items-center gap-2 bg-blue-100 text-primary px-4 py-1.5 rounded-full text-sm font-semibold mb-2">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 16L12 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M9 13L12 16L15 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M7 3.33782C8.47087 2.48697 10.1786 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 10.1786 2.48697 8.47087 3.33782 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            <span>OUR CAPABILITIES</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Comprehensive Technology Solutions
           </h2>
-          <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
-            We offer a wide range of services to help businesses transform their digital presence and operations.
+          <p className="mt-3 text-gray-600 max-w-2xl mx-auto text-lg">
+            We offer a wide range of services to help businesses transform their digital presence and accelerate growth.
           </p>
         </motion.div>
         
@@ -145,7 +156,7 @@ export default function Services() {
           </div>
         ) : (
           <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10"
             variants={container}
             initial="hidden"
             whileInView="show"
@@ -154,24 +165,24 @@ export default function Services() {
             {services && services.map((service) => (
               <motion.div 
                 key={service.id} 
-                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1 group"
+                className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group"
                 variants={item}
               >
                 <Link href={`/services/${service.slug}`}>
-                  <div className="block p-6 cursor-pointer">
-                    <div className="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-blue-100 transition-colors">
+                  <div className="block p-7 cursor-pointer">
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-blue-50 rounded-xl flex items-center justify-center mb-5 group-hover:from-primary/20 group-hover:to-blue-100 transition-colors">
                       <ServiceIcon iconName={service.icon} />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
                       {service.title}
                     </h3>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-gray-600 mb-5 leading-relaxed">
                       {service.description.length > 120 
                         ? `${service.description.substring(0, 120)}...` 
                         : service.description}
                     </p>
-                    <div className="text-primary font-medium inline-flex items-center mt-2 group-hover:translate-x-1 transition-transform">
-                      Learn more <span className="ml-2">→</span>
+                    <div className="text-primary font-medium inline-flex items-center group-hover:translate-x-2 transition-all duration-300">
+                      Learn more <span className="ml-2 group-hover:ml-3 transition-all">→</span>
                     </div>
                   </div>
                 </Link>
@@ -180,13 +191,23 @@ export default function Services() {
           </motion.div>
         )}
         
-        <div className="text-center mt-12">
+        <motion.div 
+          className="text-center mt-16"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+        >
           <Link href="/services">
-            <div className="inline-flex items-center justify-center bg-primary hover:bg-blue-700 text-white py-3 px-8 rounded-md font-medium transition duration-300 ease-in-out cursor-pointer">
+            <div className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white py-3.5 px-8 rounded-md font-medium transition duration-300 ease-in-out cursor-pointer group">
               View All Services
+              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3.33337 8H12.6667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M8.66663 4L12.6666 8L8.66663 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
