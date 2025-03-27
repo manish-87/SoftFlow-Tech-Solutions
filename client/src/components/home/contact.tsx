@@ -76,61 +76,61 @@ export default function Contact() {
   ];
   
   return (
-    <section id="contact" className="py-16 md:py-24 bg-gradient-to-b from-neutral-100 to-white">
+    <section id="contact" className="py-16 md:py-24 bg-[#1C1C1C] text-white">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="text-sm uppercase font-medium mb-2">
+          CONTACT US
+        </div>
+        <h2 className="text-3xl md:text-4xl font-bold mb-8">
+          Partner with Us for Comprehensive IT
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.5 }}
+            className="lg:pt-10"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-neutral-800 font-sans mb-6">Let's Discuss Your Project</h2>
-            <p className="text-neutral-700 mb-8">
-              Ready to transform your business with our software solutions? Contact us today for a free consultation.
+            <p className="text-gray-300 mb-8 text-lg">
+              We're happy to answer any questions you may have and help you determine which of our services best fit your needs.
             </p>
             
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <MapPin className="text-primary h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold text-neutral-800 mb-1">Our Location</h4>
-                  <p className="text-neutral-600">123 Tech Boulevard, Silicon Valley, CA 94025</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Mail className="text-primary h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold text-neutral-800 mb-1">Email Us</h4>
-                  <p className="text-neutral-600">info@softflow.com</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Phone className="text-primary h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold text-neutral-800 mb-1">Call Us</h4>
-                  <p className="text-neutral-600">+1 (555) 123-4567</p>
-                </div>
-              </div>
+            <div className="mb-8">
+              <h4 className="text-lg font-bold mb-2">Call us at: +1 (555) 123-4567</h4>
+            </div>
+            
+            <div className="mb-8">
+              <h4 className="text-lg font-bold mb-4">Why Choose SoftFlow?</h4>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <div className="text-primary mt-1">✓</div>
+                  <span>Faster Turnaround</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="text-primary mt-1">✓</div>
+                  <span>Robust Engineering</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="text-primary mt-1">✓</div>
+                  <span>One Stop Solution</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="text-primary mt-1">✓</div>
+                  <span>Trusted Advisory</span>
+                </li>
+              </ul>
             </div>
           </motion.div>
           
           <motion.div
-            className="bg-white p-8 rounded-lg shadow-lg"
+            className="bg-white text-black p-8 rounded shadow"
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.5 }}
           >
-            <h3 className="text-2xl font-bold text-neutral-800 mb-6 font-sans">Send Us a Message</h3>
+            <h3 className="text-xl font-bold text-neutral-800 mb-4">Schedule a Free Consultation</h3>
             
             {isSubmitted ? (
               <div className="text-center py-8">
@@ -231,10 +231,10 @@ export default function Contact() {
                   
                   <Button 
                     type="submit" 
-                    className="w-full"
+                    className="w-40 bg-blue-600 hover:bg-blue-700"
                     disabled={messageMutation.isPending}
                   >
-                    {messageMutation.isPending ? "Sending..." : "Send Message"}
+                    {messageMutation.isPending ? "Sending..." : "Submit"}
                   </Button>
                 </form>
               </Form>
