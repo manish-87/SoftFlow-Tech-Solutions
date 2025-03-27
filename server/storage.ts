@@ -138,6 +138,8 @@ export class MemStorage implements IStorage {
     // The password here is "JMk@475869"
     this.createUser({
       username: "manish.jammulapati",
+      email: "admin@softflow.com",
+      phone: "9876543210",
       password: "b5337e9336eeb0de0739ea91dadd18cfd1b897cec7be8d9e93bd676d60aa32e9d0f90a5f8a3b6f815580dd396a8f4d03fed0618c41d8bbc4e138e02e0b5dce67.c3e9f78174e74c4c9e31efa800183d09",
       isAdmin: true,
     });
@@ -604,6 +606,8 @@ export class DatabaseStorage implements IStorage {
       .insert(users)
       .values({
         username: insertUser.username,
+        email: insertUser.email,
+        phone: insertUser.phone,
         password: insertUser.password,
         isAdmin: insertUser.isAdmin || false,
       })

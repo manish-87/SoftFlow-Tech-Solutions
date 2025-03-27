@@ -1,200 +1,137 @@
-import Layout from "@/components/layout/layout";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { Loader2, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import {
-  Code,
-  Server,
-  Smartphone,
-  Cloud,
-  BarChart3,
-  Clipboard,
-  Check,
-} from "lucide-react";
-import { Link } from "wouter";
+import Layout from "@/components/layout/layout";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Service } from "@shared/schema";
 
 export default function ServicesPage() {
-  const services = [
-    {
-      icon: <Code className="h-8 w-8 text-primary" />,
-      title: "Frontend Development",
-      description:
-        "Modern, responsive user interfaces built with the latest technologies for exceptional user experiences. We use React, Angular, Vue, and other modern frameworks to create stunning, responsive web applications.",
-      features: [
-        "UI/UX Design Implementation",
-        "Responsive Web Applications",
-        "Single Page Applications (SPAs)",
-        "Progressive Web Apps (PWAs)",
-        "Performance Optimization",
-      ],
-    },
-    {
-      icon: <Server className="h-8 w-8 text-primary" />,
-      title: "Backend & Web Services",
-      description:
-        "Robust and scalable server-side solutions, APIs, and web services for your business applications. Our backends are built to scale, providing security, performance, and reliability.",
-      features: [
-        "RESTful API Development",
-        "GraphQL Services",
-        "Microservices Architecture",
-        "Database Design & Optimization",
-        "Authentication & Authorization Systems",
-      ],
-    },
-    {
-      icon: <Smartphone className="h-8 w-8 text-primary" />,
-      title: "Application Development",
-      description:
-        "Custom desktop, mobile, and web applications designed for your specific business requirements. We develop native and cross-platform applications that deliver exceptional user experiences.",
-      features: [
-        "iOS & Android App Development",
-        "Cross-Platform Development",
-        "Desktop Application Development",
-        "Enterprise Software Solutions",
-        "Legacy System Modernization",
-      ],
-    },
-    {
-      icon: <Cloud className="h-8 w-8 text-primary" />,
-      title: "Cloud Managed Services",
-      description:
-        "Cloud governance, infrastructure automation, monitoring, support, and security posture management. We help you leverage the power of the cloud securely and efficiently.",
-      features: [
-        "Cloud Migration & Strategy",
-        "Infrastructure as Code (IaC)",
-        "Continuous Integration/Deployment",
-        "Security Compliance & Management",
-        "24/7 Monitoring & Support",
-      ],
-    },
-    {
-      icon: <BarChart3 className="h-8 w-8 text-primary" />,
-      title: "Data Analytics",
-      description:
-        "Data warehousing, real-time monitoring, advanced analytics, and data visualization solutions. Turn your data into actionable insights that drive business growth.",
-      features: [
-        "Business Intelligence Solutions",
-        "Predictive Analytics",
-        "Big Data Processing",
-        "Custom Dashboards & Reporting",
-        "Machine Learning Integration",
-      ],
-    },
-    {
-      icon: <Clipboard className="h-8 w-8 text-primary" />,
-      title: "Consultancy Services",
-      description:
-        "Architecture consulting, technology best practices, scalability and security advisory. Our experts provide strategic guidance to help you make informed technology decisions.",
-      features: [
-        "Technology Roadmapping",
-        "System Architecture Design",
-        "IT Security Audits",
-        "Performance Optimization",
-        "Agile Process Implementation",
-      ],
-    },
-  ];
+  const [, setLocation] = useLocation();
+  
+  const { data: services, isLoading } = useQuery<Service[]>({
+    queryKey: ["/api/services"],
+  });
+
+  const handleServiceContactClick = (serviceSlug: string) => {
+    setLocation(`/contact?service=${serviceSlug}`);
+  };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container mx-auto py-20 flex justify-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      <div className="pt-20">
-        {/* Hero Section */}
-        <section className="bg-primary text-white py-20">
-          <div className="container mx-auto px-4 md:px-6">
-            <motion.div
-              className="max-w-3xl mx-auto text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sans">
-                Our Services
-              </h1>
-              <p className="text-lg opacity-90">
-                Comprehensive technology solutions tailored to your business
-                needs
-              </p>
-            </motion.div>
-          </div>
-        </section>
+      {/* Hero Section */}
+      <section className="bg-primary/5 py-20">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center max-w-3xl mx-auto"
+          >
+            <h1 className="text-4xl font-bold mb-6">Our Services</h1>
+            <p className="text-lg text-gray-600 mb-8">
+              We offer a comprehensive range of technology solutions tailored to meet your business needs.
+              From front-end development to cloud management, our team of experts is ready to
+              help you achieve your digital transformation goals.
+            </p>
+          </motion.div>
+        </div>
+      </section>
 
-        {/* Services List */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="grid grid-cols-1 gap-16">
-              {services.map((service, index) => (
-                <motion.div
-                  key={index}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center"
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <div className={index % 2 === 1 ? "md:order-2" : ""}>
-                    <div className="bg-primary/10 w-16 h-16 rounded-lg flex items-center justify-center mb-6">
-                      {service.icon}
+      {/* Services Grid */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services?.map((service, index) => (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-lg">
+                  <CardHeader>
+                    <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                      <span className="text-primary text-2xl">
+                        {getServiceIcon(service.icon)}
+                      </span>
                     </div>
-                    <h2 className="text-3xl font-bold mb-4 font-sans">
-                      {service.title}
-                    </h2>
-                    <p className="text-neutral-700 mb-6">
-                      {service.description}
-                    </p>
-                    <ul className="space-y-3 mb-8">
-                      {service.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link href="/contact">
-                      <Button className="bg-primary hover:bg-primary/90">
-                        Get Started
-                      </Button>
-                    </Link>
-                  </div>
-                  <div
-                    className={`bg-neutral-100 p-8 rounded-lg h-72 flex items-center justify-center ${
-                      index % 2 === 1 ? "md:order-1" : ""
-                    }`}
-                  >
-                    <div className="bg-primary/20 w-24 h-24 rounded-full flex items-center justify-center">
-                      {service.icon}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                    <CardTitle>{service.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <p className="text-gray-600">{service.description}</p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      onClick={() => handleServiceContactClick(service.slug)}
+                      className="w-full"
+                    >
+                      Get a Quote <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* CTA Section */}
-        <section className="py-16 bg-neutral-100">
-          <div className="container mx-auto px-4 md:px-6">
-            <motion.div
-              className="max-w-3xl mx-auto text-center"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
+      {/* CTA Section */}
+      <section className="bg-primary text-white py-20">
+        <div className="container mx-auto px-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-3xl mx-auto"
+          >
+            <h2 className="text-3xl font-bold mb-6">Ready to transform your business?</h2>
+            <p className="mb-8 text-white/80">
+              Contact our team today to discuss how our services can help you achieve your goals.
+            </p>
+            <Button 
+              onClick={() => setLocation('/contact')}
+              variant="secondary" 
+              size="lg"
             >
-              <h2 className="text-3xl font-bold mb-4 font-sans">
-                Ready to Transform Your Business?
-              </h2>
-              <p className="text-neutral-700 mb-8">
-                Contact us today to discuss how our services can help you achieve
-                your technology goals.
-              </p>
-              <Link href="/contact">
-                <Button className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-md font-medium transition duration-300 ease-in-out">
-                  Request a Consultation
-                </Button>
-              </Link>
-            </motion.div>
-          </div>
-        </section>
-      </div>
+              Contact Us
+            </Button>
+          </motion.div>
+        </div>
+      </section>
     </Layout>
   );
+}
+
+// Helper function to render icon based on icon name
+function getServiceIcon(iconName: string | null) {
+  // This is a placeholder - ideally you would import and use actual icons
+  switch (iconName) {
+    case 'code':
+      return '💻';
+    case 'server':
+      return '🖥️';
+    case 'smartphone':
+      return '📱';
+    case 'cloud':
+      return '☁️';
+    case 'bar-chart':
+      return '📊';
+    case 'lightbulb':
+      return '💡';
+    default:
+      return '🔧';
+  }
 }

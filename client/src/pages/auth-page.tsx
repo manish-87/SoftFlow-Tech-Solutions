@@ -23,6 +23,12 @@ const authSchema = insertUserSchema.extend({
   username: z.string().min(3, {
     message: "Username must be at least 3 characters",
   }),
+  email: z.string().email({
+    message: "Please enter a valid email address",
+  }),
+  phone: z.string().min(10, {
+    message: "Please enter a valid phone number",
+  }),
   password: z.string().min(6, {
     message: "Password must be at least 6 characters",
   }),
@@ -46,6 +52,8 @@ export default function AuthPage() {
     resolver: zodResolver(authSchema),
     defaultValues: {
       username: "",
+      email: "",
+      phone: "",
       password: "",
     },
   });
@@ -54,6 +62,8 @@ export default function AuthPage() {
     resolver: zodResolver(authSchema),
     defaultValues: {
       username: "",
+      email: "",
+      phone: "",
       password: "",
     },
   });
@@ -173,6 +183,42 @@ export default function AuthPage() {
                         <FormControl>
                           <Input
                             placeholder="Choose a username"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="Enter your email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="tel"
+                            placeholder="Enter your phone number"
                             {...field}
                           />
                         </FormControl>
