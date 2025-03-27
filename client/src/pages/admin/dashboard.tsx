@@ -211,6 +211,26 @@ export default function Dashboard() {
               </p>
             </CardContent>
           </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Projects</CardTitle>
+              <Folder className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalProjects}</div>
+              <p className="text-xs text-muted-foreground">
+                {activeProjects} active, {completedProjects} completed
+              </p>
+              <div className="mt-2">
+                <Link href="/admin/users">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Manage Projects
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Charts */}
@@ -294,6 +314,45 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
+              {/* Project Status Chart */}
+              <Card className="col-span-1">
+                <CardHeader>
+                  <CardTitle>Project Status Distribution</CardTitle>
+                </CardHeader>
+                <CardContent className="h-80">
+                  {projectStatusData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={projectStatusData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={true}
+                          label={({ name, percent }) =>
+                            `${name}: ${(percent * 100).toFixed(0)}%`
+                          }
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {projectStatusData.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-muted-foreground">
+                      No project data available
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              
               {/* Message Trends */}
               <Card className="col-span-1 md:col-span-2">
                 <CardHeader>
@@ -336,9 +395,9 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="recent" className="space-y-4">
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
               {/* Recent Messages */}
-              <Card>
+              <Card className="md:col-span-1">
                 <CardHeader>
                   <CardTitle className="flex justify-between items-center">
                     <span>Recent Messages</span>
@@ -390,7 +449,7 @@ export default function Dashboard() {
               </Card>
 
               {/* Recent Applications */}
-              <Card>
+              <Card className="md:col-span-1">
                 <CardHeader>
                   <CardTitle className="flex justify-between items-center">
                     <span>Recent Applications</span>
@@ -447,6 +506,73 @@ export default function Dashboard() {
                   ) : (
                     <p className="text-muted-foreground text-center py-4">
                       No applications available
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+              
+              {/* Recent Projects */}
+              <Card className="md:col-span-1">
+                <CardHeader>
+                  <CardTitle className="flex justify-between items-center">
+                    <span>Recent Projects</span>
+                    <Link href="/admin/users">
+                      <Button variant="outline" size="sm">
+                        View All
+                      </Button>
+                    </Link>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {projects && projects.length > 0 ? (
+                    <div className="space-y-4">
+                      {projects.slice(0, 5).map((project) => (
+                        <div
+                          key={project.id}
+                          className="flex justify-between items-start border-b pb-3"
+                        >
+                          <div>
+                            <div className="font-medium text-sm">{project.title}</div>
+                            <div className="text-xs text-muted-foreground">
+                              User ID: {project.userId}
+                            </div>
+                            <div className="text-sm mt-1">
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                  project.status === "planning"
+                                    ? "bg-purple-100 text-purple-800"
+                                    : project.status === "in-progress"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : project.status === "review"
+                                    ? "bg-amber-100 text-amber-800"
+                                    : project.status === "completed"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {project.status}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            {project.status === "planning" ? (
+                              <Clock className="h-4 w-4 text-purple-500" />
+                            ) : project.status === "in-progress" ? (
+                              <Clock className="h-4 w-4 text-blue-500" />
+                            ) : project.status === "review" ? (
+                              <Eye className="h-4 w-4 text-amber-500" />
+                            ) : project.status === "completed" ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Clock className="h-4 w-4 text-gray-500" />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-center py-4">
+                      No projects available
                     </p>
                   )}
                 </CardContent>

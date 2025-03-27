@@ -600,6 +600,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin project management endpoints
+  // GET all projects (admin endpoint)
+  app.get("/api/admin/projects", async (req, res) => {
+    try {
+      // Ensure user is authenticated and is an admin
+      if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      // Get all projects from all users
+      const projects = [];
+      const users = await storage.getAllUsers();
+      
+      for (const user of users) {
+        const userProjects = await storage.getProjects(user.id);
+        projects.push(...userProjects);
+      }
+      
+      res.json(projects);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error getting all projects:", errorMessage);
+      res.status(500).json({ message: "Failed to get projects" });
+    }
+  });
+
   app.post("/api/admin/projects", async (req, res) => {
     try {
       const validatedData = insertProjectSchema.parse(req.body);
