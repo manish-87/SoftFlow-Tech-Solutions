@@ -4,11 +4,11 @@ import { ArrowRight, Sparkles, Cloud, Code, Bot } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="relative bg-gradient-to-br from-indigo-50 via-blue-50 to-white pt-20">
+    <section className="relative bg-gradient-to-br from-pink-50 via-rose-50 to-white pt-20">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 md:px-6 py-16 md:py-24 relative z-10">
@@ -19,7 +19,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="inline-flex items-center gap-2 bg-blue-100 text-primary px-4 py-1.5 rounded-full text-sm font-semibold">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-semibold">
               <Sparkles className="h-4 w-4" />
               <span>NEXT-GEN TECHNOLOGY SOLUTIONS</span>
             </div>
@@ -67,7 +67,7 @@ export default function Hero() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Link href="/services" className="bg-white/80 backdrop-blur-sm text-primary border border-primary/30 hover:border-primary hover:bg-blue-50 py-3.5 px-8 rounded-md font-medium transition duration-300 ease-in-out text-center block">
+                <Link href="/services" className="bg-white/80 backdrop-blur-sm text-primary border border-primary/30 hover:border-primary hover:bg-primary/5 py-3.5 px-8 rounded-md font-medium transition duration-300 ease-in-out text-center block">
                   Explore Our Services
                 </Link>
               </motion.div>
@@ -82,7 +82,7 @@ export default function Hero() {
           >
             <div className="relative">
               {/* Decorative elements */}
-              <div className="absolute -top-6 -left-6 bg-blue-100 w-32 h-32 rounded-full -z-10"></div>
+              <div className="absolute -top-6 -left-6 bg-primary/10 w-32 h-32 rounded-full -z-10"></div>
               <div className="absolute -bottom-4 -right-4 bg-primary/10 w-24 h-24 rounded-full -z-10"></div>
               
               <img 

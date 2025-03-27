@@ -231,7 +231,7 @@ export default function Contact() {
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-red-500 hover:bg-red-600"
+                    className="w-full"
                     disabled={messageMutation.isPending}
                   >
                     {messageMutation.isPending ? "Sending..." : "Send Message"}
