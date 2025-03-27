@@ -197,12 +197,13 @@ export const invoices = pgTable("invoices", {
   id: serial("id").primaryKey(),
   projectId: integer("project_id").notNull(),
   invoiceNumber: text("invoice_number").notNull().unique(),
-  status: text("status").default("pending").notNull(), // pending, paid, unpaid, overdue, cancelled
+  status: text("status").default("pending").notNull(), // pending, paid, partially_paid, unpaid, overdue, cancelled
   amount: numeric("amount").notNull(),
   currency: text("currency").default("USD").notNull(),
   dueDate: date("due_date").notNull(),
   issueDate: date("issue_date").notNull(),
   paymentDate: date("payment_date"),
+  paymentReference: text("payment_reference"),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

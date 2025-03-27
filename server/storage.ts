@@ -731,7 +731,11 @@ export class MemStorage implements IStorage {
     const newInvoice: Invoice = {
       ...invoice,
       id,
-      createdAt: new Date()
+      createdAt: new Date(),
+      // Ensure paymentReference is included
+      paymentReference: invoice.paymentReference || null,
+      // Set default status if not provided
+      status: invoice.status || "pending"
     };
     this.invoicesList.set(id, newInvoice);
     return newInvoice;
@@ -742,7 +746,7 @@ export class MemStorage implements IStorage {
     if (!invoice) return undefined;
 
     // Only update if status is valid
-    if (!["pending", "paid", "unpaid", "overdue", "cancelled"].includes(status)) {
+    if (!["pending", "paid", "partially_paid", "unpaid", "overdue", "cancelled"].includes(status)) {
       throw new Error("Invalid invoice status");
     }
 
@@ -817,14 +821,19 @@ export class MemStorage implements IStorage {
     };
     this.paymentsList.set(id, newPayment);
 
-    // Update invoice status to paid if payment completes the invoice amount
+    // Update invoice status based on payment amount
     const invoice = this.invoicesList.get(payment.invoiceId);
     if (invoice) {
       const allPayments = await this.getInvoicePayments(payment.invoiceId);
       const totalPaid = allPayments.reduce((sum, p) => sum + Number(p.amount), 0) + Number(payment.amount);
+      const invoiceAmount = Number(invoice.amount);
       
-      if (totalPaid >= Number(invoice.amount)) {
+      if (totalPaid >= invoiceAmount) {
+        // Payment completed
         await this.updateInvoiceStatus(payment.invoiceId, "paid");
+      } else if (totalPaid > 0) {
+        // Partial payment
+        await this.updateInvoiceStatus(payment.invoiceId, "partially_paid");
       }
     }
 
@@ -1349,13 +1358,19 @@ export class DatabaseStorage implements IStorage {
   async createInvoice(invoice: InsertInvoice): Promise<Invoice> {
     const [newInvoice] = await db
       .insert(invoices)
-      .values(invoice)
+      .values({
+        ...invoice,
+        // Ensure paymentReference is included
+        paymentReference: invoice.paymentReference || null,
+        // Set default status if not provided
+        status: invoice.status || "pending"
+      })
       .returning();
     return newInvoice;
   }
 
   async updateInvoiceStatus(id: number, status: string): Promise<Invoice | undefined> {
-    if (!["pending", "paid", "unpaid", "overdue", "cancelled"].includes(status)) {
+    if (!["pending", "paid", "partially_paid", "unpaid", "overdue", "cancelled"].includes(status)) {
       throw new Error("Invalid invoice status");
     }
     
@@ -1425,14 +1440,19 @@ export class DatabaseStorage implements IStorage {
       .values(payment)
       .returning();
 
-    // Update invoice status to paid if payment completes the invoice amount
+    // Update invoice status based on payment amount
     const invoice = await this.getInvoice(payment.invoiceId);
     if (invoice) {
       const allPayments = await this.getInvoicePayments(payment.invoiceId);
       const totalPaid = allPayments.reduce((sum, p) => sum + Number(p.amount), 0) + Number(payment.amount);
+      const invoiceAmount = Number(invoice.amount);
       
-      if (totalPaid >= Number(invoice.amount)) {
+      if (totalPaid >= invoiceAmount) {
+        // Payment completed
         await this.updateInvoiceStatus(payment.invoiceId, "paid");
+      } else if (totalPaid > 0) {
+        // Partial payment
+        await this.updateInvoiceStatus(payment.invoiceId, "partially_paid");
       }
     }
 
@@ -1451,11 +1471,19 @@ export class DatabaseStorage implements IStorage {
     
     // Update invoice status if needed
     const invoice = await this.getInvoice(payment.invoiceId);
-    if (invoice && invoice.status === "paid") {
+    if (invoice && (invoice.status === "paid" || invoice.status === "partially_paid")) {
       const remainingPayments = await this.getInvoicePayments(payment.invoiceId);
       const totalPaid = remainingPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+      const invoiceAmount = Number(invoice.amount);
       
-      if (totalPaid < Number(invoice.amount)) {
+      if (totalPaid >= invoiceAmount) {
+        // Still fully paid
+        await this.updateInvoiceStatus(payment.invoiceId, "paid");
+      } else if (totalPaid > 0) {
+        // Now partially paid
+        await this.updateInvoiceStatus(payment.invoiceId, "partially_paid");
+      } else {
+        // No payments left
         await this.updateInvoiceStatus(payment.invoiceId, "unpaid");
       }
     }
