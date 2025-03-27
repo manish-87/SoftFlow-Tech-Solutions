@@ -173,7 +173,7 @@ export default function AdminProjectsPage() {
   const getProjectStatusBadge = (status: string) => {
     switch (status) {
       case "planning":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800">Planning</Badge>;
+        return <Badge variant="outline" className="bg-gray-100 text-gray-800">Planning</Badge>;
       case "in-progress":
         return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">In Progress</Badge>;
       case "review":
