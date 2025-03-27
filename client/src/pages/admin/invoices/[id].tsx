@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AdminLayout } from '@/components/admin/admin-layout';
+import AdminLayout from '@/components/admin/admin-layout';
 
 export default function AdminInvoiceDetailPage() {
   const { id } = useParams();

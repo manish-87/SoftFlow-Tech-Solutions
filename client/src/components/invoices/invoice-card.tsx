@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { InvoiceStatusBadge } from './invoice-status-badge';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import { Invoice } from '@shared/schema';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { ArrowRight, Calendar, DollarSign, FileText } from 'lucide-react';
 
 type InvoiceCardProps = {
@@ -13,7 +13,7 @@ type InvoiceCardProps = {
 }
 
 export function InvoiceCard({ invoice, showActions = true }: InvoiceCardProps) {
-  const navigate = useNavigate()[1];
+  const [, navigate] = useLocation();
   
   const handleClick = () => {
     navigate(`/invoices/${invoice.id}`);

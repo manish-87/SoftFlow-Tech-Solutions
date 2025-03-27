@@ -24,7 +24,7 @@ export function InvoiceStatusBadge({ status, className }: InvoiceStatusBadgeProp
         };
       case 'pending':
         return {
-          variant: 'warning' as const,
+          variant: 'secondary' as const,
           label: 'Pending',
           icon: 'clock'
         };
@@ -53,12 +53,12 @@ export function InvoiceStatusBadge({ status, className }: InvoiceStatusBadgeProp
   
   return (
     <Badge 
-      variant={config.variant} 
+      variant={config.variant === 'success' ? 'default' : config.variant}
       className={cn(
         "font-medium",
         config.variant === 'success' && "bg-green-100 text-green-800 hover:bg-green-200",
         config.variant === 'destructive' && "bg-red-100 text-red-800 hover:bg-red-200", 
-        config.variant === 'warning' && "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+        (config.variant === 'secondary' && status.toLowerCase() === 'pending') && "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
         config.variant === 'outline' && "bg-gray-100 text-gray-800 hover:bg-gray-200",
         className
       )}

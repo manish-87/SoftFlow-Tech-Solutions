@@ -134,6 +134,7 @@ export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   title: text("title").notNull(),
+  name: text("name").notNull(),
   description: text("description").notNull(),
   status: text("status").default("planning").notNull(), // planning, in-progress, review, completed, on-hold
   completionPercentage: integer("completion_percentage").default(0).notNull(),
