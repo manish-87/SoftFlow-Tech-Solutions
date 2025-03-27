@@ -18,6 +18,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
 
+  // Health check for Render deployment
+  app.get("/api/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
   // Blog posts endpoints
   app.get("/api/blogs", async (req, res) => {
     try {
