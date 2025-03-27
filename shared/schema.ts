@@ -15,6 +15,7 @@ export const users = pgTable("users", {
   linkedinUrl: text("linkedin_url"),
   portfolioUrl: text("portfolio_url"), 
   isAdmin: boolean("is_admin").default(false).notNull(),
+  isVerified: boolean("is_verified").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

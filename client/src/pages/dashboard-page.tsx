@@ -239,6 +239,17 @@ export default function DashboardPage() {
                     <div>
                       <CardTitle className="text-2xl">{user?.username}</CardTitle>
                       <CardDescription className="mt-2">{user?.email}</CardDescription>
+                      <div className="mt-2">
+                        {user?.isVerified ? (
+                          <Badge className="bg-green-500">
+                            <CheckCircle className="mr-1 h-3 w-3" /> Verified Profile
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="border-amber-500 text-amber-500">
+                            <Clock className="mr-1 h-3 w-3" /> Pending Verification
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
@@ -253,8 +264,17 @@ export default function DashboardPage() {
                             <FormItem>
                               <FormLabel>Email</FormLabel>
                               <FormControl>
-                                <Input {...field} type="email" />
+                                <Input 
+                                  {...field} 
+                                  type="email"
+                                  disabled={user?.isVerified} 
+                                />
                               </FormControl>
+                              {user?.isVerified && (
+                                <FormDescription>
+                                  Email cannot be changed after verification
+                                </FormDescription>
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}
@@ -267,8 +287,16 @@ export default function DashboardPage() {
                             <FormItem>
                               <FormLabel>Phone Number</FormLabel>
                               <FormControl>
-                                <Input {...field} />
+                                <Input 
+                                  {...field} 
+                                  disabled={user?.isVerified} 
+                                />
                               </FormControl>
+                              {user?.isVerified && (
+                                <FormDescription>
+                                  Phone number cannot be changed after verification
+                                </FormDescription>
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}

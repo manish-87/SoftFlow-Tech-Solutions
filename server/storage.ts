@@ -24,6 +24,8 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser & { isAdmin?: boolean }): Promise<User>;
   updateUser(id: number, userData: Partial<Omit<User, 'id' | 'password' | 'isAdmin'>>): Promise<User | undefined>;
+  verifyUser(id: number): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   
   // Blog posts
   getBlogPosts(): Promise<BlogPost[]>;
@@ -252,6 +254,7 @@ export class MemStorage implements IStorage {
       ...insertUser, 
       id,
       isAdmin: insertUser.isAdmin || false,
+      isVerified: false,
       photo: null,
       bio: null,
       githubUrl: null,
@@ -274,6 +277,23 @@ export class MemStorage implements IStorage {
     
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+  
+  async verifyUser(id: number): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+    
+    const updatedUser: User = {
+      ...existingUser,
+      isVerified: true,
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
 
   // Blog posts methods
@@ -640,6 +660,7 @@ export class DatabaseStorage implements IStorage {
         phone: insertUser.phone,
         password: insertUser.password,
         isAdmin: insertUser.isAdmin || false,
+        isVerified: insertUser.isAdmin || false, // Auto-verify admin users, regular users need approval
       })
       .returning();
     return user;
@@ -652,6 +673,19 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return updatedUser;
+  }
+  
+  async verifyUser(id: number): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ isVerified: true })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(users.username);
   }
 
   // Blog posts methods

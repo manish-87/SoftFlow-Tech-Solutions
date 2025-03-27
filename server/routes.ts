@@ -726,6 +726,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Object.entries(req.body).filter(([key]) => allowedFields.includes(key))
       );
       
+      // Get current user to check if they are verified
+      const currentUser = await storage.getUser(req.user.id);
+      
+      // If user is verified, they can't update email and phone
+      if (currentUser?.isVerified) {
+        delete updateData.email;
+        delete updateData.phone;
+      }
+      
       const updatedUser = await storage.updateUser(req.user.id, updateData);
       
       if (!updatedUser) {
@@ -737,6 +746,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error("Error updating user profile:", errorMessage);
       res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+  
+  // Admin user management endpoints
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      // Ensure user is authenticated and is an admin
+      if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error getting users:", errorMessage);
+      res.status(500).json({ message: "Failed to get users" });
+    }
+  });
+  
+  app.put("/api/admin/users/:id/verify", async (req, res) => {
+    try {
+      // Ensure user is authenticated and is an admin
+      if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const updatedUser = await storage.verifyUser(id);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error verifying user:", errorMessage);
+      res.status(500).json({ message: "Failed to verify user" });
     }
   });
 

@@ -1,6 +1,6 @@
 import AdminLayout from "@/components/admin/admin-layout";
 import { useQuery } from "@tanstack/react-query";
-import { BlogPost, Message, Career, Application } from "@shared/schema";
+import { BlogPost, Message, Career, Application, User } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,8 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  UserCheck,
+  Shield,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -47,6 +49,10 @@ export default function Dashboard() {
   const { data: applications } = useQuery<Application[]>({
     queryKey: ["/api/admin/applications"],
   });
+  
+  const { data: users } = useQuery<User[]>({
+    queryKey: ["/api/admin/users"],
+  });
 
   // Calculate statistics
   const unreadMessages = messages?.filter((msg) => !msg.read).length || 0;
@@ -61,6 +67,9 @@ export default function Dashboard() {
   const pendingApplications = applications?.filter(
     (app) => app.status === "pending"
   ).length || 0;
+  
+  const totalUsers = users?.length || 0;
+  const verifiedUsers = users?.filter((user) => user.verified).length || 0;
 
   // Chart data
   const blogCategoryData = blogs

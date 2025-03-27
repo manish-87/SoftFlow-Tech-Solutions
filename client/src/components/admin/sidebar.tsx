@@ -7,7 +7,8 @@ import {
   Briefcase,
   ArrowLeft,
   Home,
-  Layers
+  Layers,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,11 @@ export default function AdminSidebar() {
       href: "/admin",
       icon: <LayoutDashboard className="h-5 w-5" />,
       exact: true
+    },
+    {
+      name: "Users",
+      href: "/admin/users",
+      icon: <Users className="h-5 w-5" />,
     },
     {
       name: "Blog Management",
