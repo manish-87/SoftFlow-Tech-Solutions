@@ -79,10 +79,10 @@ export default function Contact() {
     <section id="contact" className="py-16 md:py-24 bg-[#1C1C1C] text-white">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-sm uppercase font-medium mb-2">
-          CONTACT US
+          GET IN TOUCH
         </div>
         <h2 className="text-3xl md:text-4xl font-bold mb-8">
-          Partner with Us for Comprehensive IT
+          Partner with Us for Your IT Solutions
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <motion.div
@@ -231,10 +231,10 @@ export default function Contact() {
                   
                   <Button 
                     type="submit" 
-                    className="w-40 bg-blue-600 hover:bg-blue-700"
+                    className="w-full"
                     disabled={messageMutation.isPending}
                   >
-                    {messageMutation.isPending ? "Sending..." : "Submit"}
+                    {messageMutation.isPending ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
               </Form>
