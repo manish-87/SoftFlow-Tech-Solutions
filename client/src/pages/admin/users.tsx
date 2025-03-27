@@ -68,9 +68,10 @@ const projectFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   startDate: z.string().min(1, "Start date is required"),
-  deadline: z.string().optional(),
-  budget: z.string().optional(),
+  estimatedEndDate: z.string().min(1, "Estimated end date is required"),
+  serviceType: z.string().min(1, "Service type is required"),
   status: z.string().default("planning"),
+  completionPercentage: z.number().default(0),
 });
 
 type ProjectFormValues = z.infer<typeof projectFormSchema>;
@@ -121,9 +122,10 @@ export default function UsersManagement() {
       title: "",
       description: "",
       startDate: new Date().toISOString().substring(0, 10),
-      deadline: "",
-      budget: "",
+      estimatedEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10), // Default to 30 days from now
+      serviceType: "",
       status: "planning",
+      completionPercentage: 0,
     }
   });
   
@@ -134,8 +136,7 @@ export default function UsersManagement() {
         ...project,
         userId,
         startDate: new Date(project.startDate).toISOString(),
-        deadline: project.deadline ? new Date(project.deadline).toISOString() : null,
-        budget: project.budget || null,
+        estimatedEndDate: new Date(project.estimatedEndDate).toISOString()
       };
       
       const res = await apiRequest("POST", `/api/admin/users/${userId}/projects`, formattedProject);
@@ -195,9 +196,10 @@ export default function UsersManagement() {
       title: "",
       description: "",
       startDate: new Date().toISOString().substring(0, 10),
-      deadline: "",
-      budget: "",
+      estimatedEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
+      serviceType: "",
       status: "planning",
+      completionPercentage: 0,
     });
   };
   
@@ -464,10 +466,10 @@ export default function UsersManagement() {
                 
                 <FormField
                   control={form.control}
-                  name="deadline"
+                  name="estimatedEndDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Deadline (Optional)</FormLabel>
+                      <FormLabel>Estimated End Date</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -480,12 +482,26 @@ export default function UsersManagement() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="budget"
+                  name="serviceType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Budget (Optional)</FormLabel>
+                      <FormLabel>Service Type</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. $5,000" {...field} />
+                        <select
+                          className="w-full h-10 px-3 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          {...field}
+                        >
+                          <option value="">Select a service type</option>
+                          <option value="web-development">Web Development</option>
+                          <option value="mobile-development">Mobile Development</option>
+                          <option value="ui-ux-design">UI/UX Design</option>
+                          <option value="cloud-services">Cloud Services</option>
+                          <option value="data-analytics">Data Analytics</option>
+                          <option value="consulting">Consulting</option>
+                          <option value="maintenance">Maintenance</option>
+                          <option value="testing-qa">Testing & QA</option>
+                          <option value="custom">Custom Service</option>
+                        </select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
