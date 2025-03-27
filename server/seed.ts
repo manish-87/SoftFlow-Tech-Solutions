@@ -16,15 +16,18 @@ async function main() {
   console.log('Seeding database...');
   
   // Check if admin user already exists
-  const existingUsers = await db.select().from(users).where(eq(users.username, 'manish.jammulapati'));
+  const existingUsers = await db.select().from(users).where(eq(users.username, 'admin'));
   
   if (existingUsers.length === 0) {
     // Create admin user
     const password = await hashPassword('JMk@475869');
     await db.insert(users).values({
-      username: 'manish.jammulapati',
+      username: 'admin',
+      email: 'admin@softflow.tech',
+      phone: '1234567890',
       password,
-      isAdmin: true
+      isAdmin: true,
+      isVerified: true // Admin is verified by default
     });
     console.log('Admin user created successfully');
   } else {
