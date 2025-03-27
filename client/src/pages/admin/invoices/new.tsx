@@ -39,9 +39,11 @@ export default function NewInvoicePage() {
   const [showPaymentDate, setShowPaymentDate] = useState(false);
   
   // Fetch all projects for the dropdown
-  const { data: projects, isLoading: isLoadingProjects } = useQuery<Project[]>({
+  const { data: projects, isLoading: isLoadingProjects, error: projectsError } = useQuery<Project[]>({
     queryKey: ['/api/projects/all'],
-    enabled: !!user?.isAdmin
+    enabled: !!user?.isAdmin,
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
   // Set up form with default values
@@ -124,6 +126,15 @@ export default function NewInvoicePage() {
         </div>
       </div>
       
+      {projectsError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTitle>Error loading projects</AlertTitle>
+          <AlertDescription>
+            We couldn't load the projects list. Please try refreshing the page.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <Card>
         <CardHeader>
           <CardTitle>Invoice Details</CardTitle>
@@ -152,10 +163,10 @@ export default function NewInvoicePage() {
                         <SelectContent>
                           {isLoadingProjects ? (
                             <SelectItem value="loading" disabled>Loading projects...</SelectItem>
-                          ) : projects && projects.length > 0 ? (
-                            projects.map((project) => (
+                          ) : projects && Array.isArray(projects) && projects.length > 0 ? (
+                            projects.map((project: Project) => (
                               <SelectItem key={project.id} value={project.id.toString()}>
-                                {project.title || `Project #${project.id}`}
+                                {project.title || project.name || `Project #${project.id}`}
                               </SelectItem>
                             ))
                           ) : (

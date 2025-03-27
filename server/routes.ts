@@ -951,9 +951,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const projects = await storage.getAllProjects();
       
       // Make sure all projects have valid properties before sending to client
-      const validProjects = projects.filter(project => 
-        project && typeof project.id === 'number' && project.title
-      );
+      const validProjects = projects.filter(project => {
+        try {
+          // Check for valid project structure
+          return (
+            project && 
+            project.id !== undefined && 
+            Number.isInteger(project.id) && 
+            // Allow title or name (handle both project form variations)
+            (project.title || project.name)
+          );
+        } catch (err) {
+          console.error("Error filtering project:", err);
+          return false;
+        }
+      });
       
       res.json(validProjects);
     } catch (error) {
