@@ -915,6 +915,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint to get all projects (for admin features like invoice creation)
+  app.get("/api/projects/all", async (req, res) => {
+    try {
+      // Ensure user is authenticated and is an admin
+      if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const projects = await storage.getAllProjects();
+      res.json(projects);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error getting all projects:", errorMessage);
+      res.status(500).json({ message: "Failed to get projects" });
+    }
+  });
+
   // API endpoint for creating projects for a specific user
   app.post("/api/admin/users/:id/projects", async (req, res) => {
     try {

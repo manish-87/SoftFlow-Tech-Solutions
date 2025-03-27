@@ -82,6 +82,7 @@ export interface IStorage {
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project | undefined>;
   deleteProject(id: number): Promise<boolean>;
+  getAllProjects(): Promise<Project[]>;
   
   // Project Updates
   getProjectUpdates(projectId: number): Promise<ProjectUpdate[]>;
@@ -619,9 +620,14 @@ export class MemStorage implements IStorage {
 
   // Projects methods
   async getProjects(userId: number): Promise<Project[]> {
-    return Array.from(this.projectsList.values()).filter(
-      (project) => project.userId === userId
-    );
+    return Array.from(this.projectsList.values())
+      .filter(project => project.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+  
+  async getAllProjects(): Promise<Project[]> {
+    return Array.from(this.projectsList.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   async getProject(id: number): Promise<Project | undefined> {
@@ -1199,6 +1205,13 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(projects)
       .where(eq(projects.userId, userId))
+      .orderBy(desc(projects.createdAt));
+  }
+  
+  async getAllProjects(): Promise<Project[]> {
+    return await db
+      .select()
+      .from(projects)
       .orderBy(desc(projects.createdAt));
   }
 

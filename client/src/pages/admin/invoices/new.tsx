@@ -40,7 +40,7 @@ export default function NewInvoicePage() {
   
   // Fetch all projects for the dropdown
   const { data: projects, isLoading: isLoadingProjects } = useQuery<Project[]>({
-    queryKey: ['/api/projects'],
+    queryKey: ['/api/projects/all'],
     enabled: !!user?.isAdmin
   });
   
