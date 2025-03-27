@@ -19,7 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const authSchema = insertUserSchema.extend({
+// Full schema for registration
+const registrationSchema = insertUserSchema.extend({
   username: z.string().min(3, {
     message: "Username must be at least 3 characters",
   }),
@@ -34,7 +35,14 @@ const authSchema = insertUserSchema.extend({
   }),
 });
 
-type AuthFormValues = z.infer<typeof authSchema>;
+// Simplified schema for login
+const loginSchema = z.object({
+  username: z.string().min(1, { message: "Username is required" }),
+  password: z.string().min(1, { message: "Password is required" }),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registrationSchema>;
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
@@ -48,8 +56,16 @@ export default function AuthPage() {
     }
   }, [user, navigate]);
 
-  const loginForm = useForm<AuthFormValues>({
-    resolver: zodResolver(authSchema),
+  const loginForm = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
+
+  const registerForm = useForm<RegisterFormValues>({
+    resolver: zodResolver(registrationSchema),
     defaultValues: {
       username: "",
       email: "",
@@ -58,21 +74,17 @@ export default function AuthPage() {
     },
   });
 
-  const registerForm = useForm<AuthFormValues>({
-    resolver: zodResolver(authSchema),
-    defaultValues: {
-      username: "",
-      email: "",
-      phone: "",
-      password: "",
-    },
-  });
-
-  const onLogin = (data: AuthFormValues) => {
-    loginMutation.mutate(data);
+  const onLogin = (data: LoginFormValues) => {
+    console.log("Login attempt with:", { username: data.username });
+    // For login, we only need username and password
+    loginMutation.mutate({
+      username: data.username,
+      password: data.password
+    });
   };
 
-  const onRegister = (data: AuthFormValues) => {
+  const onRegister = (data: RegisterFormValues) => {
+    console.log("Register attempt with:", { username: data.username, email: data.email });
     registerMutation.mutate(data);
   };
 
