@@ -99,7 +99,6 @@ export const applications = pgTable("applications", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
-  photo: text("photo"), // Passport sized photo URL
   resume: text("resume").notNull(), // PDF resume URL
   coverLetter: text("cover_letter"),
   githubUrl: text("github_url"),
