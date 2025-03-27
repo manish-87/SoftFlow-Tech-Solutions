@@ -33,8 +33,8 @@ A professional corporate website for SoftFlow that provides comprehensive servic
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/your-username/softflow-corporate-website.git
-   cd softflow-corporate-website
+   git clone https://github.com/manish-87/Soft-Flow-Tecnologies.git
+   cd Soft-Flow-Tecnologies
    ```
 
 2. Install dependencies
@@ -105,6 +105,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Your Name - your_email@example.com
+Manish - jmanishkumar.2003@gmail.com
 
-Project Link: [https://github.com/your-username/softflow-corporate-website](https://github.com/your-username/softflow-corporate-website)
+Project Link: [https://github.com/manish-87/Soft-Flow-Tecnologies](https://github.com/manish-87/Soft-Flow-Tecnologies)
