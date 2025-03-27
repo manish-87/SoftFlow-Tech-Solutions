@@ -30,6 +30,7 @@ const projectSchema = z.object({
   startDate: z.string().min(1, "Start date is required"),
   estimatedEndDate: z.string().min(1, "Estimated completion date is required"),
   name: z.string().min(3, "Project name must be at least 3 characters"),
+  serviceType: z.string().min(1, "Service type is required"),
   completionPercentage: z.preprocess(
     (val) => parseInt(val as string, 10),
     z.number().min(0).max(100)
@@ -72,6 +73,7 @@ export default function AdminProjectsPage() {
       startDate: new Date().toISOString().split('T')[0],
       estimatedEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       name: "",
+      serviceType: "Web Development", // Default service type
       completionPercentage: 0,
     },
   });
@@ -155,6 +157,7 @@ export default function AdminProjectsPage() {
       startDate: new Date(project.startDate).toISOString().split('T')[0],
       estimatedEndDate: new Date(project.estimatedEndDate).toISOString().split('T')[0],
       name: project.name || "",
+      serviceType: project.serviceType || "Web Development",
       completionPercentage: project.completionPercentage,
     });
     setIsDialogOpen(true);
@@ -489,6 +492,40 @@ export default function AdminProjectsPage() {
                           />
                           <span className="text-muted-foreground">%</span>
                         </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="serviceType"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Service Type</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select service type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Web Development">Web Development</SelectItem>
+                            <SelectItem value="Mobile App Development">Mobile App Development</SelectItem>
+                            <SelectItem value="UI/UX Design">UI/UX Design</SelectItem>
+                            <SelectItem value="Cloud Services">Cloud Services</SelectItem>
+                            <SelectItem value="DevOps">DevOps</SelectItem>
+                            <SelectItem value="Data Analytics">Data Analytics</SelectItem>
+                            <SelectItem value="Consulting">Consulting</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

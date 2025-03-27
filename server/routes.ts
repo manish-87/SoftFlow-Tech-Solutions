@@ -649,6 +649,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/projects/:id", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
       const id = parseInt(req.params.id);
       const validatedData = insertProjectSchema.partial().parse(req.body);
       const project = await storage.updateProject(id, validatedData);
@@ -669,6 +679,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/admin/projects/:id", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
       const id = parseInt(req.params.id);
       const success = await storage.deleteProject(id);
       
@@ -919,7 +939,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects/all", async (req, res) => {
     try {
       // Ensure user is authenticated and is an admin
-      if (!req.user || !req.user.isAdmin) {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      if (!req.user.isAdmin) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -935,8 +959,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint for creating projects for a specific user
   app.post("/api/admin/users/:id/projects", async (req, res) => {
     try {
-      // Ensure user is authenticated and is an admin
-      if (!req.user || !req.user.isAdmin) {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -975,8 +1004,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects/:id/invoices", async (req, res) => {
     try {
       // Only authenticated users can access invoices
-      if (!req.user) {
-        return res.status(401).json({ message: "Not authenticated" });
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
       }
 
       const projectId = parseInt(req.params.id);
@@ -1002,8 +1031,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/invoices/:id", async (req, res) => {
     try {
       // Only authenticated users can access invoices
-      if (!req.user) {
-        return res.status(401).json({ message: "Not authenticated" });
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
       }
 
       const id = parseInt(req.params.id);
@@ -1031,8 +1060,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/invoices/:id/items", async (req, res) => {
     try {
       // Only authenticated users can access invoice items
-      if (!req.user) {
-        return res.status(401).json({ message: "Not authenticated" });
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
       }
 
       const invoiceId = parseInt(req.params.id);
@@ -1061,8 +1090,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/invoices/:id/payments", async (req, res) => {
     try {
       // Only authenticated users can access invoice payments
-      if (!req.user) {
-        return res.status(401).json({ message: "Not authenticated" });
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
       }
 
       const invoiceId = parseInt(req.params.id);
@@ -1091,6 +1120,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin invoice management endpoints
   app.post("/api/projects/:id/invoices", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
       const projectId = parseInt(req.params.id);
       const project = await storage.getProject(projectId);
       
@@ -1125,6 +1164,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/invoices/:id/items", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
       const invoiceId = parseInt(req.params.id);
       const invoice = await storage.getInvoice(invoiceId);
       
@@ -1153,6 +1202,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/invoices/:id/payments", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
       const invoiceId = parseInt(req.params.id);
       const invoice = await storage.getInvoice(invoiceId);
       
@@ -1181,6 +1240,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/invoices/:id/status", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
       const id = parseInt(req.params.id);
       const { status } = req.body;
       
@@ -1203,6 +1272,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/invoice-items/:id", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
       const id = parseInt(req.params.id);
       const validatedData = insertInvoiceItemSchema.partial().parse(req.body);
       
@@ -1225,6 +1304,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/admin/invoices/:id", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
       const id = parseInt(req.params.id);
       const success = await storage.deleteInvoice(id);
       
@@ -1241,6 +1330,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/admin/invoice-items/:id", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
       const id = parseInt(req.params.id);
       const success = await storage.deleteInvoiceItem(id);
       
@@ -1257,6 +1356,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/admin/payments/:id", async (req, res) => {
     try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure user is an admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
       const id = parseInt(req.params.id);
       const success = await storage.deletePayment(id);
       
