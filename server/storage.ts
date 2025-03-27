@@ -1,7 +1,9 @@
 import { User, InsertUser, BlogPost, InsertBlogPost, Partner, InsertPartner, 
   Message, InsertMessage, Career, InsertCareer, Application, InsertApplication, Service, InsertService,
-  Project, InsertProject, ProjectUpdate, InsertProjectUpdate,
-  users, blogPosts, partners, messages, careers, applications, services, projects, projectUpdates } from "@shared/schema";
+  Project, InsertProject, ProjectUpdate, InsertProjectUpdate, Invoice, InsertInvoice, InvoiceItem, 
+  InsertInvoiceItem, Payment, InsertPayment,
+  users, blogPosts, partners, messages, careers, applications, services, projects, projectUpdates,
+  invoices, invoiceItems, payments } from "@shared/schema";
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { db } from "./db";
@@ -91,6 +93,24 @@ export interface IStorage {
   // User Messages
   getMessagesByEmail(email: string): Promise<Message[]>;
   
+  // Invoices
+  getProjectInvoices(projectId: number): Promise<Invoice[]>;
+  getInvoice(id: number): Promise<Invoice | undefined>;
+  createInvoice(invoice: InsertInvoice): Promise<Invoice>;
+  updateInvoiceStatus(id: number, status: string): Promise<Invoice | undefined>;
+  deleteInvoice(id: number): Promise<boolean>;
+  
+  // Invoice Items
+  getInvoiceItems(invoiceId: number): Promise<InvoiceItem[]>;
+  createInvoiceItem(item: InsertInvoiceItem): Promise<InvoiceItem>;
+  updateInvoiceItem(id: number, item: Partial<InsertInvoiceItem>): Promise<InvoiceItem | undefined>;
+  deleteInvoiceItem(id: number): Promise<boolean>;
+  
+  // Payments
+  getInvoicePayments(invoiceId: number): Promise<Payment[]>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  deletePayment(id: number): Promise<boolean>;
+  
   // Session store
   sessionStore: any;
 }
@@ -105,6 +125,9 @@ export class MemStorage implements IStorage {
   private servicesList: Map<number, Service>;
   private projectsList: Map<number, Project>;
   private projectUpdatesList: Map<number, ProjectUpdate>;
+  private invoicesList: Map<number, Invoice>;
+  private invoiceItemsList: Map<number, InvoiceItem>;
+  private paymentsList: Map<number, Payment>;
   
   currentUserId: number;
   currentBlogId: number;
@@ -115,6 +138,9 @@ export class MemStorage implements IStorage {
   currentServiceId: number;
   currentProjectId: number;
   currentProjectUpdateId: number;
+  currentInvoiceId: number;
+  currentInvoiceItemId: number;
+  currentPaymentId: number;
   sessionStore: any;
 
   constructor() {
@@ -127,6 +153,9 @@ export class MemStorage implements IStorage {
     this.servicesList = new Map();
     this.projectsList = new Map();
     this.projectUpdatesList = new Map();
+    this.invoicesList = new Map();
+    this.invoiceItemsList = new Map();
+    this.paymentsList = new Map();
     
     this.currentUserId = 1;
     this.currentBlogId = 1;
@@ -137,6 +166,9 @@ export class MemStorage implements IStorage {
     this.currentServiceId = 1;
     this.currentProjectId = 1;
     this.currentProjectUpdateId = 1;
+    this.currentInvoiceId = 1;
+    this.currentInvoiceItemId = 1;
+    this.currentPaymentId = 1;
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
@@ -658,6 +690,144 @@ export class MemStorage implements IStorage {
       .filter(message => message.email === email)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
+
+  // Invoice methods
+  async getProjectInvoices(projectId: number): Promise<Invoice[]> {
+    return Array.from(this.invoicesList.values())
+      .filter(invoice => invoice.projectId === projectId)
+      .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime());
+  }
+
+  async getInvoice(id: number): Promise<Invoice | undefined> {
+    return this.invoicesList.get(id);
+  }
+
+  async createInvoice(invoice: InsertInvoice): Promise<Invoice> {
+    const id = this.currentInvoiceId++;
+    const newInvoice: Invoice = {
+      ...invoice,
+      id,
+      createdAt: new Date()
+    };
+    this.invoicesList.set(id, newInvoice);
+    return newInvoice;
+  }
+
+  async updateInvoiceStatus(id: number, status: string): Promise<Invoice | undefined> {
+    const invoice = this.invoicesList.get(id);
+    if (!invoice) return undefined;
+
+    // Only update if status is valid
+    if (!["pending", "paid", "unpaid", "overdue", "cancelled"].includes(status)) {
+      throw new Error("Invalid invoice status");
+    }
+
+    const updatedInvoice: Invoice = {
+      ...invoice,
+      status,
+      paymentDate: status === "paid" ? new Date() : invoice.paymentDate
+    };
+    this.invoicesList.set(id, updatedInvoice);
+    return updatedInvoice;
+  }
+
+  async deleteInvoice(id: number): Promise<boolean> {
+    // First delete all invoice items and payments associated with this invoice
+    Array.from(this.invoiceItemsList.values())
+      .filter(item => item.invoiceId === id)
+      .forEach(item => this.invoiceItemsList.delete(item.id));
+
+    Array.from(this.paymentsList.values())
+      .filter(payment => payment.invoiceId === id)
+      .forEach(payment => this.paymentsList.delete(payment.id));
+
+    return this.invoicesList.delete(id);
+  }
+
+  // Invoice Items methods
+  async getInvoiceItems(invoiceId: number): Promise<InvoiceItem[]> {
+    return Array.from(this.invoiceItemsList.values())
+      .filter(item => item.invoiceId === invoiceId);
+  }
+
+  async createInvoiceItem(item: InsertInvoiceItem): Promise<InvoiceItem> {
+    const id = this.currentInvoiceItemId++;
+    const newItem: InvoiceItem = {
+      ...item,
+      id,
+      createdAt: new Date()
+    };
+    this.invoiceItemsList.set(id, newItem);
+    return newItem;
+  }
+
+  async updateInvoiceItem(id: number, item: Partial<InsertInvoiceItem>): Promise<InvoiceItem | undefined> {
+    const invoiceItem = this.invoiceItemsList.get(id);
+    if (!invoiceItem) return undefined;
+
+    const updatedItem: InvoiceItem = {
+      ...invoiceItem,
+      ...item
+    };
+    this.invoiceItemsList.set(id, updatedItem);
+    return updatedItem;
+  }
+
+  async deleteInvoiceItem(id: number): Promise<boolean> {
+    return this.invoiceItemsList.delete(id);
+  }
+
+  // Payment methods
+  async getInvoicePayments(invoiceId: number): Promise<Payment[]> {
+    return Array.from(this.paymentsList.values())
+      .filter(payment => payment.invoiceId === invoiceId)
+      .sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
+  }
+
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const id = this.currentPaymentId++;
+    const newPayment: Payment = {
+      ...payment,
+      id,
+      createdAt: new Date()
+    };
+    this.paymentsList.set(id, newPayment);
+
+    // Update invoice status to paid if payment completes the invoice amount
+    const invoice = this.invoicesList.get(payment.invoiceId);
+    if (invoice) {
+      const allPayments = await this.getInvoicePayments(payment.invoiceId);
+      const totalPaid = allPayments.reduce((sum, p) => sum + Number(p.amount), 0) + Number(payment.amount);
+      
+      if (totalPaid >= Number(invoice.amount)) {
+        await this.updateInvoiceStatus(payment.invoiceId, "paid");
+      }
+    }
+
+    return newPayment;
+  }
+
+  async deletePayment(id: number): Promise<boolean> {
+    const payment = this.paymentsList.get(id);
+    if (!payment) return false;
+
+    const success = this.paymentsList.delete(id);
+    
+    // Update invoice status if needed
+    if (success) {
+      const invoice = this.invoicesList.get(payment.invoiceId);
+      if (invoice && invoice.status === "paid") {
+        const remainingPayments = await this.getInvoicePayments(payment.invoiceId);
+        const totalPaid = remainingPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+        
+        if (totalPaid < Number(invoice.amount)) {
+          await this.updateInvoiceStatus(payment.invoiceId, "unpaid");
+        }
+      }
+    }
+
+    return success;
+  }
 }
 
 // Database Storage implementation
@@ -1099,6 +1269,140 @@ export class DatabaseStorage implements IStorage {
       .from(messages)
       .where(eq(messages.email, email))
       .orderBy(desc(messages.createdAt));
+  }
+
+  // Invoice methods
+  async getProjectInvoices(projectId: number): Promise<Invoice[]> {
+    return await db
+      .select()
+      .from(invoices)
+      .where(eq(invoices.projectId, projectId))
+      .orderBy(desc(invoices.issueDate));
+  }
+
+  async getInvoice(id: number): Promise<Invoice | undefined> {
+    const [invoice] = await db
+      .select()
+      .from(invoices)
+      .where(eq(invoices.id, id));
+    return invoice;
+  }
+
+  async createInvoice(invoice: InsertInvoice): Promise<Invoice> {
+    const [newInvoice] = await db
+      .insert(invoices)
+      .values(invoice)
+      .returning();
+    return newInvoice;
+  }
+
+  async updateInvoiceStatus(id: number, status: string): Promise<Invoice | undefined> {
+    if (!["pending", "paid", "unpaid", "overdue", "cancelled"].includes(status)) {
+      throw new Error("Invalid invoice status");
+    }
+    
+    const [updatedInvoice] = await db
+      .update(invoices)
+      .set({ 
+        status,
+        paymentDate: status === "paid" ? new Date() : null
+      })
+      .where(eq(invoices.id, id))
+      .returning();
+    return updatedInvoice;
+  }
+
+  async deleteInvoice(id: number): Promise<boolean> {
+    // First delete all invoice items and payments associated with this invoice
+    await db.delete(invoiceItems).where(eq(invoiceItems.invoiceId, id));
+    await db.delete(payments).where(eq(payments.invoiceId, id));
+    
+    // Then delete the invoice itself
+    await db.delete(invoices).where(eq(invoices.id, id));
+    return true;
+  }
+
+  // Invoice Items methods
+  async getInvoiceItems(invoiceId: number): Promise<InvoiceItem[]> {
+    return await db
+      .select()
+      .from(invoiceItems)
+      .where(eq(invoiceItems.invoiceId, invoiceId));
+  }
+
+  async createInvoiceItem(item: InsertInvoiceItem): Promise<InvoiceItem> {
+    const [newItem] = await db
+      .insert(invoiceItems)
+      .values(item)
+      .returning();
+    return newItem;
+  }
+
+  async updateInvoiceItem(id: number, item: Partial<InsertInvoiceItem>): Promise<InvoiceItem | undefined> {
+    const [updatedItem] = await db
+      .update(invoiceItems)
+      .set(item)
+      .where(eq(invoiceItems.id, id))
+      .returning();
+    return updatedItem;
+  }
+
+  async deleteInvoiceItem(id: number): Promise<boolean> {
+    await db.delete(invoiceItems).where(eq(invoiceItems.id, id));
+    return true;
+  }
+
+  // Payment methods
+  async getInvoicePayments(invoiceId: number): Promise<Payment[]> {
+    return await db
+      .select()
+      .from(payments)
+      .where(eq(payments.invoiceId, invoiceId))
+      .orderBy(desc(payments.paymentDate));
+  }
+
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const [newPayment] = await db
+      .insert(payments)
+      .values(payment)
+      .returning();
+
+    // Update invoice status to paid if payment completes the invoice amount
+    const invoice = await this.getInvoice(payment.invoiceId);
+    if (invoice) {
+      const allPayments = await this.getInvoicePayments(payment.invoiceId);
+      const totalPaid = allPayments.reduce((sum, p) => sum + Number(p.amount), 0) + Number(payment.amount);
+      
+      if (totalPaid >= Number(invoice.amount)) {
+        await this.updateInvoiceStatus(payment.invoiceId, "paid");
+      }
+    }
+
+    return newPayment;
+  }
+
+  async deletePayment(id: number): Promise<boolean> {
+    const [payment] = await db
+      .select()
+      .from(payments)
+      .where(eq(payments.id, id));
+
+    if (!payment) return false;
+
+    await db.delete(payments).where(eq(payments.id, id));
+    
+    // Update invoice status if needed
+    const invoice = await this.getInvoice(payment.invoiceId);
+    if (invoice && invoice.status === "paid") {
+      const remainingPayments = await this.getInvoicePayments(payment.invoiceId);
+      const totalPaid = remainingPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+      
+      if (totalPaid < Number(invoice.amount)) {
+        await this.updateInvoiceStatus(payment.invoiceId, "unpaid");
+      }
+    }
+
+    return true;
   }
 }
 

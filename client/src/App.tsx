@@ -24,6 +24,13 @@ import { AuthProvider } from "./hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
 import WhatsappButton from "./components/whatsapp-button";
 
+// Invoice pages
+import InvoicesPage from "@/pages/invoices";
+import InvoiceDetailPage from "@/pages/invoices/[id]";
+import AdminInvoicesPage from "@/pages/admin/invoices";
+import AdminInvoiceDetailPage from "@/pages/admin/invoices/[id]";
+import NewInvoicePage from "@/pages/admin/invoices/new";
+
 function Router() {
   return (
     <Switch>
@@ -39,6 +46,10 @@ function Router() {
       
       {/* User Dashboard - Protected route for authenticated users */}
       <ProtectedRoute path="/dashboard" component={DashboardPage} />
+      
+      {/* Invoice Routes - Protected for authenticated users */}
+      <ProtectedRoute path="/invoices" component={InvoicesPage} />
+      <ProtectedRoute path="/invoices/:id" component={InvoiceDetailPage} />
 
       {/* Admin Routes - Protected with admin only access */}
       <ProtectedRoute path="/admin" component={Dashboard} adminOnly />
@@ -49,6 +60,11 @@ function Router() {
       <ProtectedRoute path="/admin/careers" component={Careers} adminOnly />
       <ProtectedRoute path="/admin/services" component={Services} adminOnly />
       <ProtectedRoute path="/admin/services-new" component={ServicesNew} adminOnly />
+      
+      {/* Admin Invoice Routes */}
+      <ProtectedRoute path="/admin/invoices" component={AdminInvoicesPage} adminOnly />
+      <ProtectedRoute path="/admin/invoices/new" component={NewInvoicePage} adminOnly />
+      <ProtectedRoute path="/admin/invoices/:id" component={AdminInvoiceDetailPage} adminOnly />
 
       {/* Fallback to 404 */}
       <Route component={NotFound} />

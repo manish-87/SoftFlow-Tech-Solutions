@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, date, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -190,3 +190,68 @@ export type InsertProject = z.infer<typeof insertProjectSchema>;
 
 export type ProjectUpdate = typeof projectUpdates.$inferSelect;
 export type InsertProjectUpdate = z.infer<typeof insertProjectUpdateSchema>;
+
+// Invoices schema
+export const invoices = pgTable("invoices", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").notNull(),
+  invoiceNumber: text("invoice_number").notNull().unique(),
+  status: text("status").default("pending").notNull(), // pending, paid, unpaid, overdue, cancelled
+  amount: numeric("amount").notNull(),
+  currency: text("currency").default("USD").notNull(),
+  dueDate: date("due_date").notNull(),
+  issueDate: date("issue_date").notNull(),
+  paymentDate: date("payment_date"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Invoice items schema
+export const invoiceItems = pgTable("invoice_items", {
+  id: serial("id").primaryKey(),
+  invoiceId: integer("invoice_id").notNull(),
+  description: text("description").notNull(),
+  quantity: numeric("quantity").notNull(),
+  unitPrice: numeric("unit_price").notNull(),
+  amount: numeric("amount").notNull(),
+  taxRate: numeric("tax_rate").default("0"),
+  taxAmount: numeric("tax_amount").default("0"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertInvoiceItemSchema = createInsertSchema(invoiceItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Payment transactions schema
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  invoiceId: integer("invoice_id").notNull(),
+  amount: numeric("amount").notNull(),
+  paymentDate: date("payment_date").notNull(),
+  paymentMethod: text("payment_method").notNull(), // credit_card, bank_transfer, cash, check, other
+  transactionId: text("transaction_id"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Type definitions for billing
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+
+export type InvoiceItem = typeof invoiceItems.$inferSelect;
+export type InsertInvoiceItem = z.infer<typeof insertInvoiceItemSchema>;
+
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;

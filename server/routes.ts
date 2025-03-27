@@ -11,7 +11,10 @@ import {
   insertApplicationSchema,
   insertServiceSchema,
   insertProjectSchema,
-  insertProjectUpdateSchema
+  insertProjectUpdateSchema,
+  insertInvoiceSchema,
+  insertInvoiceItemSchema,
+  insertPaymentSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -948,6 +951,306 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error("Error creating project for user:", errorMessage);
       res.status(500).json({ message: "Failed to create project" });
+    }
+  });
+
+  // Project invoice endpoints
+  app.get("/api/projects/:id/invoices", async (req, res) => {
+    try {
+      // Only authenticated users can access invoices
+      if (!req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Users can only see invoices for their own projects unless they are admin
+      if (project.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const invoices = await storage.getProjectInvoices(projectId);
+      res.json(invoices);
+    } catch (error) {
+      console.error("Error getting project invoices:", error);
+      res.status(500).json({ message: "Failed to get project invoices" });
+    }
+  });
+
+  app.get("/api/invoices/:id", async (req, res) => {
+    try {
+      // Only authenticated users can access invoices
+      if (!req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const id = parseInt(req.params.id);
+      const invoice = await storage.getInvoice(id);
+      
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      // Get the project to check permissions
+      const project = await storage.getProject(invoice.projectId);
+      
+      // Users can only see invoices for their own projects unless they are admin
+      if (project.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      res.json(invoice);
+    } catch (error) {
+      console.error("Error getting invoice:", error);
+      res.status(500).json({ message: "Failed to get invoice" });
+    }
+  });
+
+  app.get("/api/invoices/:id/items", async (req, res) => {
+    try {
+      // Only authenticated users can access invoice items
+      if (!req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const invoiceId = parseInt(req.params.id);
+      const invoice = await storage.getInvoice(invoiceId);
+      
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      // Get the project to check permissions
+      const project = await storage.getProject(invoice.projectId);
+      
+      // Users can only see invoice items for their own projects unless they are admin
+      if (project.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const items = await storage.getInvoiceItems(invoiceId);
+      res.json(items);
+    } catch (error) {
+      console.error("Error getting invoice items:", error);
+      res.status(500).json({ message: "Failed to get invoice items" });
+    }
+  });
+
+  app.get("/api/invoices/:id/payments", async (req, res) => {
+    try {
+      // Only authenticated users can access invoice payments
+      if (!req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const invoiceId = parseInt(req.params.id);
+      const invoice = await storage.getInvoice(invoiceId);
+      
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      // Get the project to check permissions
+      const project = await storage.getProject(invoice.projectId);
+      
+      // Users can only see invoice payments for their own projects unless they are admin
+      if (project.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const payments = await storage.getInvoicePayments(invoiceId);
+      res.json(payments);
+    } catch (error) {
+      console.error("Error getting invoice payments:", error);
+      res.status(500).json({ message: "Failed to get invoice payments" });
+    }
+  });
+
+  // Admin invoice management endpoints
+  app.post("/api/admin/projects/:id/invoices", async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Generate a unique invoice number
+      const date = new Date();
+      const invoiceNumber = `INV-${project.id}-${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+      
+      const invoiceData = {
+        ...req.body,
+        projectId,
+        invoiceNumber,
+        status: req.body.status || "pending"
+      };
+      
+      const validatedData = insertInvoiceSchema.parse(invoiceData);
+      const invoice = await storage.createInvoice(validatedData);
+      
+      res.status(201).json(invoice);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid invoice data", errors: error.errors });
+      }
+      
+      console.error("Error creating invoice:", error);
+      res.status(500).json({ message: "Failed to create invoice" });
+    }
+  });
+
+  app.post("/api/admin/invoices/:id/items", async (req, res) => {
+    try {
+      const invoiceId = parseInt(req.params.id);
+      const invoice = await storage.getInvoice(invoiceId);
+      
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      const itemData = {
+        ...req.body,
+        invoiceId
+      };
+      
+      const validatedData = insertInvoiceItemSchema.parse(itemData);
+      const item = await storage.createInvoiceItem(validatedData);
+      
+      res.status(201).json(item);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid invoice item data", errors: error.errors });
+      }
+      
+      console.error("Error creating invoice item:", error);
+      res.status(500).json({ message: "Failed to create invoice item" });
+    }
+  });
+
+  app.post("/api/admin/invoices/:id/payments", async (req, res) => {
+    try {
+      const invoiceId = parseInt(req.params.id);
+      const invoice = await storage.getInvoice(invoiceId);
+      
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      const paymentData = {
+        ...req.body,
+        invoiceId
+      };
+      
+      const validatedData = insertPaymentSchema.parse(paymentData);
+      const payment = await storage.createPayment(validatedData);
+      
+      res.status(201).json(payment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid payment data", errors: error.errors });
+      }
+      
+      console.error("Error creating payment:", error);
+      res.status(500).json({ message: "Failed to create payment" });
+    }
+  });
+
+  app.put("/api/admin/invoices/:id/status", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!status || !["pending", "paid", "unpaid", "overdue", "cancelled"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      const invoice = await storage.updateInvoiceStatus(id, status);
+      
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      res.json(invoice);
+    } catch (error) {
+      console.error("Error updating invoice status:", error);
+      res.status(500).json({ message: "Failed to update invoice status" });
+    }
+  });
+
+  app.put("/api/admin/invoice-items/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertInvoiceItemSchema.partial().parse(req.body);
+      
+      const item = await storage.updateInvoiceItem(id, validatedData);
+      
+      if (!item) {
+        return res.status(404).json({ message: "Invoice item not found" });
+      }
+      
+      res.json(item);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid invoice item data", errors: error.errors });
+      }
+      
+      console.error("Error updating invoice item:", error);
+      res.status(500).json({ message: "Failed to update invoice item" });
+    }
+  });
+
+  app.delete("/api/admin/invoices/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteInvoice(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+      res.status(500).json({ message: "Failed to delete invoice" });
+    }
+  });
+
+  app.delete("/api/admin/invoice-items/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteInvoiceItem(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Invoice item not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting invoice item:", error);
+      res.status(500).json({ message: "Failed to delete invoice item" });
+    }
+  });
+
+  app.delete("/api/admin/payments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deletePayment(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting payment:", error);
+      res.status(500).json({ message: "Failed to delete payment" });
     }
   });
 
