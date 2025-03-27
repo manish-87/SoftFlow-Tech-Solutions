@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, CheckCircle, Clock, XCircle, BarChart, Activity, Users, MessageSquare, User, Settings } from "lucide-react";
+import { Loader2, FileText, CheckCircle, Clock, XCircle, BarChart, Activity, Users, MessageSquare, User, Settings, Receipt } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,10 @@ import { z } from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import Layout from "@/components/layout/layout";
-import { Application, Message, Project, User as UserType } from "@shared/schema";
+import { Application, Message, Project, User as UserType, Invoice } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect } from "wouter";
+import { Redirect, Link } from "wouter";
+import { InvoiceStatusBadge } from "@/components/invoices/invoice-status-badge";
 
 // Placeholder component for when there's no data
 const EmptyState = ({ message }: { message: string }) => (
@@ -84,6 +85,36 @@ export default function DashboardPage() {
     queryKey: ["/api/projects"],
     enabled: !!user, // Only run query if user is logged in
   });
+  
+  // Track project invoices data
+  const [projectInvoices, setProjectInvoices] = useState<{ [key: number]: Invoice[] }>({});
+  
+  // Fetch invoices for each project when projects change
+  useEffect(() => {
+    if (projects && projects.length > 0 && activeTab === "projects") {
+      // Create an async function to fetch invoices for each project
+      const fetchProjectInvoices = async () => {
+        const invoicesData: { [key: number]: Invoice[] } = {};
+        
+        // Fetch invoices for each project
+        for (const project of projects) {
+          try {
+            const res = await fetch(`/api/projects/${project.id}/invoices`);
+            if (res.ok) {
+              const data = await res.json();
+              invoicesData[project.id] = data;
+            }
+          } catch (error) {
+            console.error(`Error fetching invoices for project ${project.id}:`, error);
+          }
+        }
+        
+        setProjectInvoices(invoicesData);
+      };
+      
+      fetchProjectInvoices();
+    }
+  }, [projects, activeTab]);
 
   // Show loading state while checking authentication
   if (authLoading) {
@@ -561,6 +592,34 @@ export default function DashboardPage() {
                             <div>{formatDate(project.startDate)}</div>
                             <div className="text-muted-foreground">Target Completion:</div>
                             <div>{formatDate(project.estimatedEndDate)}</div>
+                            
+                            {/* Display payment status */}
+                            {projectInvoices[project.id] && projectInvoices[project.id].length > 0 && (
+                              <>
+                                <div className="text-muted-foreground">Payment Status:</div>
+                                <div className="flex items-center space-x-2">
+                                  {projectInvoices[project.id].every(invoice => invoice.status === 'paid') ? (
+                                    <Badge variant="outline" className="bg-green-100 text-green-800">
+                                      <CheckCircle className="mr-1 h-3 w-3" /> Paid
+                                    </Badge>
+                                  ) : projectInvoices[project.id].some(invoice => invoice.status === 'paid') ? (
+                                    <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+                                      <Clock className="mr-1 h-3 w-3" /> Partially Paid
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="bg-red-100 text-red-800">
+                                      <XCircle className="mr-1 h-3 w-3" /> Unpaid
+                                    </Badge>
+                                  )}
+                                  <Link href="/invoices">
+                                    <a className="text-xs text-primary flex items-center hover:underline">
+                                      <Receipt className="h-3 w-3 mr-1" />
+                                      View Invoices
+                                    </a>
+                                  </Link>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                       </CardContent>
