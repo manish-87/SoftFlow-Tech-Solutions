@@ -1,15 +1,15 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import HomePage from "@/pages/home-page";
 import AboutPage from "@/pages/about-page";
-import ServicesPage from "@/pages/services-page";
 import BlogPage from "@/pages/blog-page";
 import BlogDetailPage from "@/pages/blog-detail-page";
 import CareersPage from "@/pages/careers-page";
 import ContactPage from "@/pages/contact-page";
 import AuthPage from "@/pages/auth-page";
+import DashboardPage from "@/pages/dashboard-page";
 import Dashboard from "@/pages/admin/dashboard";
 import BlogManagement from "@/pages/admin/blog-management";
 import Messages from "@/pages/admin/messages";
@@ -26,12 +26,17 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/about" component={AboutPage} />
-      <Route path="/services" component={ServicesPage} />
+      <Route path="/services">
+        {() => <Redirect to="/contact?service=true" />}
+      </Route>
       <Route path="/blog" component={BlogPage} />
       <Route path="/blog/:slug" component={BlogDetailPage} />
       <Route path="/careers" component={CareersPage} />
       <Route path="/contact" component={ContactPage} />
       <Route path="/auth" component={AuthPage} />
+      
+      {/* User Dashboard - Protected route for authenticated users */}
+      <ProtectedRoute path="/dashboard" component={DashboardPage} />
 
       {/* Admin Routes - Protected with admin only access */}
       <ProtectedRoute path="/admin" component={Dashboard} adminOnly />

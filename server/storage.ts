@@ -1,11 +1,19 @@
 import { User, InsertUser, BlogPost, InsertBlogPost, Partner, InsertPartner, 
   Message, InsertMessage, Career, InsertCareer, Application, InsertApplication, Service, InsertService,
-  users, blogPosts, partners, messages, careers, applications, services } from "@shared/schema";
+  Project, InsertProject, ProjectUpdate, InsertProjectUpdate,
+  users, blogPosts, partners, messages, careers, applications, services, projects, projectUpdates } from "@shared/schema";
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import { db } from "./db";
 import { eq, desc, asc, and } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
+
+// Fix for SessionStore type
+declare module "express-session" {
+  interface SessionData {
+    passport?: any;
+  }
+}
 
 // Session store
 const MemoryStore = createMemoryStore(session);
@@ -60,8 +68,22 @@ export interface IStorage {
   toggleServiceActive(id: number, active: boolean): Promise<Service | undefined>;
   deleteService(id: number): Promise<boolean>;
   
+  // Projects
+  getProjects(userId: number): Promise<Project[]>;
+  getProject(id: number): Promise<Project | undefined>;
+  createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: number, project: Partial<InsertProject>): Promise<Project | undefined>;
+  deleteProject(id: number): Promise<boolean>;
+  
+  // Project Updates
+  getProjectUpdates(projectId: number): Promise<ProjectUpdate[]>;
+  createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate>;
+  
+  // User Applications
+  getUserApplications(email: string): Promise<Application[]>;
+  
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any;
 }
 
 export class MemStorage implements IStorage {
@@ -72,6 +94,8 @@ export class MemStorage implements IStorage {
   private careersList: Map<number, Career>;
   private applicationsList: Map<number, Application>;
   private servicesList: Map<number, Service>;
+  private projectsList: Map<number, Project>;
+  private projectUpdatesList: Map<number, ProjectUpdate>;
   
   currentUserId: number;
   currentBlogId: number;
@@ -80,7 +104,9 @@ export class MemStorage implements IStorage {
   currentCareerId: number;
   currentApplicationId: number;
   currentServiceId: number;
-  sessionStore: session.SessionStore;
+  currentProjectId: number;
+  currentProjectUpdateId: number;
+  sessionStore: any;
 
   constructor() {
     this.users = new Map();
@@ -90,6 +116,8 @@ export class MemStorage implements IStorage {
     this.careersList = new Map();
     this.applicationsList = new Map();
     this.servicesList = new Map();
+    this.projectsList = new Map();
+    this.projectUpdatesList = new Map();
     
     this.currentUserId = 1;
     this.currentBlogId = 1;
@@ -98,6 +126,8 @@ export class MemStorage implements IStorage {
     this.currentCareerId = 1;
     this.currentApplicationId = 1;
     this.currentServiceId = 1;
+    this.currentProjectId = 1;
+    this.currentProjectUpdateId = 1;
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
@@ -470,6 +500,73 @@ export class MemStorage implements IStorage {
   async deleteService(id: number): Promise<boolean> {
     return this.servicesList.delete(id);
   }
+
+  // Projects methods
+  async getProjects(userId: number): Promise<Project[]> {
+    return Array.from(this.projectsList.values()).filter(
+      (project) => project.userId === userId
+    );
+  }
+
+  async getProject(id: number): Promise<Project | undefined> {
+    return this.projectsList.get(id);
+  }
+
+  async createProject(project: InsertProject): Promise<Project> {
+    const id = this.currentProjectId++;
+    const now = new Date();
+    const newProject: Project = {
+      ...project,
+      id,
+      createdAt: now,
+      status: project.status || "pending",
+      completionPercentage: project.completionPercentage || 0
+    };
+    this.projectsList.set(id, newProject);
+    return newProject;
+  }
+
+  async updateProject(id: number, project: Partial<InsertProject>): Promise<Project | undefined> {
+    const existingProject = this.projectsList.get(id);
+    if (!existingProject) return undefined;
+    
+    const updatedProject: Project = {
+      ...existingProject,
+      ...project
+    };
+    this.projectsList.set(id, updatedProject);
+    return updatedProject;
+  }
+
+  async deleteProject(id: number): Promise<boolean> {
+    return this.projectsList.delete(id);
+  }
+
+  // Project Updates methods
+  async getProjectUpdates(projectId: number): Promise<ProjectUpdate[]> {
+    return Array.from(this.projectUpdatesList.values())
+      .filter(update => update.projectId === projectId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate> {
+    const id = this.currentProjectUpdateId++;
+    const now = new Date();
+    const newUpdate: ProjectUpdate = {
+      ...update,
+      id,
+      createdAt: now
+    };
+    this.projectUpdatesList.set(id, newUpdate);
+    return newUpdate;
+  }
+
+  // User Applications methods
+  async getUserApplications(email: string): Promise<Application[]> {
+    return Array.from(this.applicationsList.values())
+      .filter(app => app.email === email)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
 }
 
 // Database Storage implementation
@@ -753,6 +850,75 @@ export class DatabaseStorage implements IStorage {
   async deleteService(id: number): Promise<boolean> {
     await db.delete(services).where(eq(services.id, id));
     return true;
+  }
+
+  // Projects methods
+  async getProjects(userId: number): Promise<Project[]> {
+    return await db
+      .select()
+      .from(projects)
+      .where(eq(projects.userId, userId))
+      .orderBy(desc(projects.createdAt));
+  }
+
+  async getProject(id: number): Promise<Project | undefined> {
+    const [project] = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.id, id));
+    return project;
+  }
+
+  async createProject(project: InsertProject): Promise<Project> {
+    const [newProject] = await db
+      .insert(projects)
+      .values({
+        ...project,
+        status: project.status || "pending",
+        completionPercentage: project.completionPercentage || 0
+      })
+      .returning();
+    return newProject;
+  }
+
+  async updateProject(id: number, project: Partial<InsertProject>): Promise<Project | undefined> {
+    const [updatedProject] = await db
+      .update(projects)
+      .set(project)
+      .where(eq(projects.id, id))
+      .returning();
+    return updatedProject;
+  }
+
+  async deleteProject(id: number): Promise<boolean> {
+    await db.delete(projects).where(eq(projects.id, id));
+    return true;
+  }
+
+  // Project Updates methods
+  async getProjectUpdates(projectId: number): Promise<ProjectUpdate[]> {
+    return await db
+      .select()
+      .from(projectUpdates)
+      .where(eq(projectUpdates.projectId, projectId))
+      .orderBy(desc(projectUpdates.createdAt));
+  }
+
+  async createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate> {
+    const [newUpdate] = await db
+      .insert(projectUpdates)
+      .values(update)
+      .returning();
+    return newUpdate;
+  }
+
+  // User Applications methods
+  async getUserApplications(email: string): Promise<Application[]> {
+    return await db
+      .select()
+      .from(applications)
+      .where(eq(applications.email, email))
+      .orderBy(desc(applications.createdAt));
   }
 }
 

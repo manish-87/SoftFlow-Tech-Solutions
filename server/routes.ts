@@ -9,7 +9,9 @@ import {
   insertMessageSchema, 
   insertCareerSchema, 
   insertApplicationSchema,
-  insertServiceSchema
+  insertServiceSchema,
+  insertProjectSchema,
+  insertProjectUpdateSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -473,6 +475,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting service:", error);
       res.status(500).json({ message: "Failed to delete service" });
+    }
+  });
+
+  // User project endpoints
+  app.get("/api/projects", async (req, res) => {
+    try {
+      // Only authenticated users can access their projects
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const projects = await storage.getProjects(req.user.id);
+      res.json(projects);
+    } catch (error) {
+      console.error("Error getting projects:", error);
+      res.status(500).json({ message: "Failed to get projects" });
+    }
+  });
+
+  app.get("/api/projects/:id", async (req, res) => {
+    try {
+      // Only authenticated users can access their projects
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const project = await storage.getProject(id);
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Users can only see their own projects unless they are admin
+      if (project.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      res.json(project);
+    } catch (error) {
+      console.error("Error getting project:", error);
+      res.status(500).json({ message: "Failed to get project" });
+    }
+  });
+
+  app.get("/api/projects/:id/updates", async (req, res) => {
+    try {
+      // Only authenticated users can access project updates
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Users can only see updates for their own projects unless they are admin
+      if (project.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const updates = await storage.getProjectUpdates(projectId);
+      res.json(updates);
+    } catch (error) {
+      console.error("Error getting project updates:", error);
+      res.status(500).json({ message: "Failed to get project updates" });
+    }
+  });
+
+  // Admin project management endpoints
+  app.post("/api/admin/projects", async (req, res) => {
+    try {
+      const validatedData = insertProjectSchema.parse(req.body);
+      const project = await storage.createProject(validatedData);
+      res.status(201).json(project);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid project data", errors: error.errors });
+      }
+      console.error("Error creating project:", error);
+      res.status(500).json({ message: "Failed to create project" });
+    }
+  });
+
+  app.put("/api/admin/projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertProjectSchema.partial().parse(req.body);
+      const project = await storage.updateProject(id, validatedData);
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      res.json(project);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid project data", errors: error.errors });
+      }
+      console.error("Error updating project:", error);
+      res.status(500).json({ message: "Failed to update project" });
+    }
+  });
+
+  app.delete("/api/admin/projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteProject(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      res.status(500).json({ message: "Failed to delete project" });
+    }
+  });
+
+  app.post("/api/admin/projects/:id/updates", async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      const validatedData = insertProjectUpdateSchema.parse({
+        ...req.body,
+        projectId
+      });
+      
+      const update = await storage.createProjectUpdate(validatedData);
+      res.status(201).json(update);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid update data", errors: error.errors });
+      }
+      console.error("Error creating project update:", error);
+      res.status(500).json({ message: "Failed to create project update" });
+    }
+  });
+
+  // Applications tracking endpoint for users
+  app.get("/api/user/applications", async (req, res) => {
+    try {
+      // Check if email query parameter is provided
+      const email = req.query.email as string;
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      const applications = await storage.getUserApplications(email);
+      res.json(applications);
+    } catch (error) {
+      console.error("Error getting user applications:", error);
+      res.status(500).json({ message: "Failed to get applications" });
     }
   });
 

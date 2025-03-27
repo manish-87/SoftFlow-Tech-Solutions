@@ -1,12 +1,13 @@
 import Layout from "@/components/layout/layout";
 import { motion } from "framer-motion";
-import { MapPin, Mail, Phone, MessageSquare } from "lucide-react";
+import { useEffect } from "react";
+import { MapPin, Mail, Phone, MessageSquare, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { InsertMessage, insertMessageSchema } from "@shared/schema";
+import { Service, InsertMessage, insertMessageSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocation } from "wouter";
 
 // Extend the schema with additional validation
 const contactFormSchema = insertMessageSchema.extend({
@@ -41,6 +43,21 @@ type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 export default function ContactPage() {
   const { toast } = useToast();
+  const [location] = useLocation();
+  
+  // Parse the query parameters to check for service=true
+  const params = new URLSearchParams(window.location.search);
+  const showServiceSection = params.get('service') === 'true';
+
+  // Fetch services from the API
+  const {
+    data: servicesData,
+    isLoading: servicesLoading,
+    error: servicesError,
+  } = useQuery<Service[]>({
+    queryKey: ["/api/services"],
+    select: (data) => data.filter(service => service.active).sort((a, b) => a.order - b.order),
+  });
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
@@ -52,6 +69,23 @@ export default function ContactPage() {
       message: "",
     },
   });
+
+  // Set focus on the service dropdown if coming from services page
+  useEffect(() => {
+    if (showServiceSection && servicesData && servicesData.length > 0) {
+      // Scroll to the form section
+      document.getElementById('contact-form')?.scrollIntoView({
+        behavior: 'smooth', 
+        block: 'start'
+      });
+      
+      // Show a welcoming toast
+      toast({
+        title: "Looking for services?",
+        description: "Please select the service you're interested in and tell us about your project.",
+      });
+    }
+  }, [showServiceSection, servicesData]);
 
   const messageMutation = useMutation({
     mutationFn: async (data: ContactFormValues) => {
@@ -79,14 +113,20 @@ export default function ContactPage() {
     messageMutation.mutate(data);
   };
 
-  const services = [
-    { value: "frontend", label: "Frontend Development" },
-    { value: "backend", label: "Backend & Web Services" },
-    { value: "app", label: "Application Development" },
-    { value: "cloud", label: "Cloud Managed Services" },
-    { value: "data", label: "Data Analytics" },
-    { value: "consulting", label: "Consultancy Services" },
-  ];
+  // Prepare services for the dropdown
+  const services = servicesData 
+    ? servicesData.map(service => ({
+        value: service.slug,
+        label: service.title
+      }))
+    : [
+        { value: "frontend", label: "Frontend Development" },
+        { value: "backend", label: "Backend & Web Services" },
+        { value: "app", label: "Application Development" },
+        { value: "cloud", label: "Cloud Managed Services" },
+        { value: "data", label: "Data Analytics" },
+        { value: "consulting", label: "Consultancy Services" },
+      ];
 
   return (
     <Layout>
@@ -169,6 +209,7 @@ export default function ContactPage() {
             {/* Contact Form and Map */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               <motion.div
+                id="contact-form"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}

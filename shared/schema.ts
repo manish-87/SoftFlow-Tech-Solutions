@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -117,6 +117,40 @@ export const insertServiceSchema = createInsertSchema(services).omit({
   createdAt: true,
 });
 
+// User projects schema
+export const projects = pgTable("projects", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  status: text("status").default("planning").notNull(), // planning, in-progress, review, completed, on-hold
+  completionPercentage: integer("completion_percentage").default(0).notNull(),
+  startDate: date("start_date").notNull(),
+  estimatedEndDate: date("estimated_end_date").notNull(),
+  serviceType: text("service_type").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const projectUpdates = pgTable("project_updates", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  completionPercentage: integer("completion_percentage"),
+  status: text("status"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertProjectUpdateSchema = createInsertSchema(projectUpdates).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Type definitions
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -138,3 +172,9 @@ export type InsertApplication = z.infer<typeof insertApplicationSchema>;
 
 export type Service = typeof services.$inferSelect;
 export type InsertService = z.infer<typeof insertServiceSchema>;
+
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+
+export type ProjectUpdate = typeof projectUpdates.$inferSelect;
+export type InsertProjectUpdate = z.infer<typeof insertProjectUpdateSchema>;
