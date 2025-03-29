@@ -166,8 +166,8 @@ export default function ContactPage() {
                 </div>
                 <h3 className="text-xl font-bold mb-2 font-sans">Our Location</h3>
                 <p className="text-neutral-700">
-                  123 Tech Boulevard <br />
-                  Silicon Valley, CA 94025
+                  172, Vaddeshwaram, Guntur <br />
+                  Andhra Pradesh, India, 522302
                 </p>
               </motion.div>
 
@@ -200,8 +200,8 @@ export default function ContactPage() {
                 </div>
                 <h3 className="text-xl font-bold mb-2 font-sans">Call Us</h3>
                 <p className="text-neutral-700">
-                  +1 (555) 123-4567 <br />
-                  +1 (555) 987-6543
+                  +91 8328609180 <br />
+                  
                 </p>
               </motion.div>
             </div>

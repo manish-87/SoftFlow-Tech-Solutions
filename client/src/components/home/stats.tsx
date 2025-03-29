@@ -35,28 +35,28 @@ const Counter = ({ end, suffix = "", prefix = "" }: { end: number; suffix?: stri
 export default function Stats() {
   const stats = [
     {
-      value: 98,
+      value: 100,
       suffix: "%",
       title: "Customer Satisfaction",
       description: "Our clients consistently rate us with high satisfaction scores.",
       icon: <CheckCircle2 className="w-8 h-8" />
     },
     {
-      value: 500,
+      value: 50,
       suffix: "+",
       title: "Projects Completed",
       description: "Successfully delivered projects across various industries.",
       icon: <Trophy className="w-8 h-8" />
     },
     {
-      value: 250,
+      value: 40,
       suffix: "+",
       title: "Happy Clients",
       description: "Businesses who trust us with their technology needs.",
       icon: <Users className="w-8 h-8" />
     },
     {
-      value: 10,
+      value: 2,
       suffix: "+",
       title: "Years Experience",
       description: "Decade of excellence in delivering technology solutions.",
@@ -70,7 +70,7 @@ export default function Stats() {
       icon: <Code2 className="w-8 h-8" />
     },
     {
-      value: 30,
+      value: 10,
       suffix: "+",
       title: "AI Models",
       description: "Custom AI solutions solving complex business challenges.",

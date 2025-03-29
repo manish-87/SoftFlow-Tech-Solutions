@@ -35,14 +35,12 @@ export default function AboutPage() {
               >
                 <h2 className="text-3xl font-bold mb-6 font-sans">Our Story</h2>
                 <p className="text-neutral-700 mb-4">
-                  Founded in 2010, SoftFlow began with a vision to bridge the gap between complex technology and business needs. Our founders, seasoned tech professionals, saw that many businesses struggled to implement effective tech solutions that truly served their goals.
+                  Founded in 2024, SoftFlow began with a vision to bridge the gap between complex technology and business needs. Our founders, seasoned tech professionals, saw that many businesses struggled to implement effective tech solutions that truly served their goals.
                 </p>
                 <p className="text-neutral-700 mb-4">
-                  Starting with just 5 team members in a small office, we've now grown to a team of over 100 experts across multiple disciplines. Throughout our journey, our core values have remained the same – delivering excellence, embracing innovation, and prioritizing our clients' success.
+                  Starting with just 5 team members in a small office, we've now grown to a big team of experts across multiple disciplines. Throughout our journey, our core values have remained the same delivering excellence, embracing innovation, and prioritizing our clients' success.
                 </p>
-                <p className="text-neutral-700">
-                  Today, SoftFlow is recognized as a leading technology solutions provider, working with businesses ranging from startups to Fortune 500 companies across various industries.
-                </p>
+                
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
@@ -206,25 +204,21 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {[
                 {
-                  name: "John Smith",
+                  name: "J Manish Kumar",
                   position: "Chief Executive Officer",
-                  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+                  image: "https://media.licdn.com/dms/image/v2/D4D03AQG1sd15gE9FdA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1712851215326?e=1748476800&v=beta&t=ntS5N0etPBZSL0lwQRxCB-hhb1srvZgcszd2rVFBdu4"
                 },
                 {
-                  name: "Sarah Johnson",
+                  name: "VSS Radha Krishna Kowshik",
                   position: "Chief Technology Officer",
-                  image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+                  image: "https://media.licdn.com/dms/image/v2/D5603AQHGmZSC5ZCctQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1722534144625?e=1748476800&v=beta&t=Rs_WTLVbd1slIg0jmv8wPAzYW8XZQic9UgOeu96bWY0"
                 },
                 {
-                  name: "Michael Chen",
+                  name: "P Manish Abhi Sai",
                   position: "Chief Operations Officer",
-                  image: "https://images.unsplash.com/photo-1531384441138-2736e62e0919?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+                  image: "https://media.licdn.com/dms/image/v2/D5635AQEuY8OY1MYL2Q/profile-framedphoto-shrink_400_400/profile-framedphoto-shrink_400_400/0/1716193972208?e=1743789600&v=beta&t=oe9BROutTyiN4bEvHJ5hAjxKtYrfp5Wg54DOPEIEqyY"
                 },
-                {
-                  name: "Emily Rodriguez",
-                  position: "Chief Marketing Officer",
-                  image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
-                }
+               
               ].map((member, index) => (
                 <motion.div 
                   key={index} 
